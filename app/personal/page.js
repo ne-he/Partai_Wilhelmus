@@ -35,30 +35,32 @@ export default function PersonalTasks() {
   }
 
   async function fetchTasks(uid) {
+    if (!uid) return;
     const { data } = await supabase
       .from("personal_tasks")
       .select("*")
-      .eq("user_id", uid || user?.id)
+      .eq("user_id", uid)
       .order("updated_at", { ascending: false });
     setTasks(data || []);
   }
 
   async function addTask(e) {
     e.preventDefault();
-    if (!title.trim()) return;
-    await supabase.from("personal_tasks").insert({ user_id: user.id, title: title.trim() });
+    if (!title.trim() || !user) return;
+    const { error } = await supabase.from("personal_tasks").insert({ user_id: user.id, title: title.trim() });
+    if (error) { console.error("Add task error:", error); return; }
     setTitle("");
-    fetchTasks();
+    fetchTasks(user.id);
   }
 
   async function updateStatus(id, status) {
     await supabase.from("personal_tasks").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
-    fetchTasks();
+    fetchTasks(user.id);
   }
 
   async function deleteTask(id) {
     await supabase.from("personal_tasks").delete().eq("id", id);
-    fetchTasks();
+    fetchTasks(user.id);
   }
 
   if (loading) return <LoadingScreen />;
