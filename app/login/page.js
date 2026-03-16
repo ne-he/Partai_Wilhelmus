@@ -62,8 +62,8 @@ export default function LoginPage() {
         borderRadius: "20px", padding: "3rem 2.5rem", position: "relative",
       }}>
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <div style={{ fontSize: "2rem", color: "var(--accent)", letterSpacing: "4px", fontWeight: "bold" }}>FAMILIA</div>
-          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", letterSpacing: "4px", marginTop: "4px" }}>TASK BOARD</div>
+          <div style={{ fontSize: "2rem", color: "var(--accent)", letterSpacing: "4px", fontWeight: "bold" }}>PARTAI</div>
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", letterSpacing: "4px", marginTop: "4px" }}>WILHELMUS</div>
           <div style={{ width: "40px", height: "1px", background: "var(--accent)", margin: "1.2rem auto 0" }} />
         </div>
 

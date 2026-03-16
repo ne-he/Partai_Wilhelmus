@@ -35,10 +35,10 @@ export default function Sidebar({ user }) {
       {/* Logo */}
       <div style={{ marginBottom: "2rem" }}>
         <div style={{ fontSize: "1.4rem", color: "var(--accent)", fontWeight: "bold", letterSpacing: "2px" }}>
-          FAMILIA
+          PARTAI
         </div>
         <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", letterSpacing: "3px", marginTop: "2px" }}>
-          TASK BOARD
+          WILHELMUS
         </div>
       </div>
 
