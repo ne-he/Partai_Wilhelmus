@@ -9,16 +9,7 @@
     "lint": "eslint",
     "test": "jest"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "transform": {
-      "^.+\\.[jt]sx?$": "babel-jest"
-    },
-    "moduleNameMapper": {
-      "^next/navigation$": "<rootDir>/__mocks__/next/navigation.js",
-      "^next/link$": "<rootDir>/__mocks__/next/link.js"
-    }
-  },
+
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",
     "next": "16.1.6",
