@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../Lib/supabaseClient";
-import { computeDateSeed, pickWithSeed, formatReference } from "../../lib/verse-utils";
+import { computeDateSeed, pickWithSeed, formatReference } from "../../Lib/verse-utils";
 import Sidebar from "../../components/Sidebar";
 
 export const dynamic = "force-dynamic";
