@@ -7,7 +7,7 @@ const navItems = [
   { href: "/home", label: "Home", icon: "✦" },
   { href: "/personal", label: "Personal", icon: "◆" },
   { href: "/family", label: "Family", icon: "⌂" },
-  { href: "/summary", label: "Summary", icon: "◈" },
+  { href: "/verse", label: "Verse", icon: "✝" },
 ];
 
 export default function Sidebar({ user }) {
