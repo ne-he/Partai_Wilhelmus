@@ -44,7 +44,7 @@ export default function LoginPage() {
       });
     }
 
-    router.push("/personal");
+    router.push("/home");
   }
 
   return (
