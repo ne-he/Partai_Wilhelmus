@@ -193,7 +193,8 @@ export default function VersePage() {
     try {
       const res = await fetch("/api/beeble/list");
       if (!res.ok) { setError(`Gagal memuat daftar kitab (${res.status})`); setLoading(false); return; }
-      bookList = await res.json();
+      const json = await res.json();
+      bookList = json.data ?? json; // API wraps in { data: [...] }
     } catch {
       setError("Gagal memuat daftar kitab. Periksa koneksi internet.");
       setLoading(false);
@@ -206,7 +207,7 @@ export default function VersePage() {
 
     const dateSeed = computeDateSeed(new Date());
     const selectedBook = pickWithSeed(bookList, dateSeed * 1);
-    const chaptersArr = Array.from({ length: selectedBook.chapters }, (_, i) => i + 1);
+    const chaptersArr = Array.from({ length: selectedBook.chapter }, (_, i) => i + 1); // field is "chapter" not "chapters"
     const selectedChapter = pickWithSeed(chaptersArr, dateSeed * 2);
 
     let verseList;
@@ -214,7 +215,9 @@ export default function VersePage() {
       const res = await fetch(`/api/beeble/passage?abbr=${selectedBook.abbr}&chapter=${selectedChapter}`);
       if (!res.ok) { setError(`Gagal memuat pasal (${res.status})`); setLoading(false); return; }
       const data = await res.json();
-      verseList = data.verses;
+      // API shape: { data: [{ book: {...}, verses: [{verse, type, content}] }] }
+      verseList = (data.data?.[0]?.verses ?? data.verses ?? [])
+        .filter(v => v.type === "content");
     } catch {
       setError("Gagal memuat isi pasal."); setLoading(false); return;
     }
@@ -224,7 +227,8 @@ export default function VersePage() {
     }
 
     const selectedVerse = pickWithSeed(verseList, dateSeed * 3);
-    setVerse(selectedVerse);
+    // field is "content" not "text"
+    setVerse({ text: selectedVerse.content, number: selectedVerse.verse });
     setReference(formatReference(selectedBook.name, selectedChapter, selectedVerse.verse));
     setBookName(selectedBook.name);
     setLoading(false);
