@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   DndContext,
@@ -11,9 +11,10 @@ import {
   useSensors,
   closestCorners,
   DragStartEvent,
-  DragEndEvent
+  DragEndEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../Lib/supabaseClient';
 import Sidebar from '../../components/Sidebar';
 import DroppableColumn from '../../components/DroppableColumn';
@@ -57,38 +58,23 @@ export default function PersonalTasks() {
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [inputFocused, setInputFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  useEffect(() => {
-    init();
-  }, []);
+  useEffect(() => { init(); }, []);
 
   async function init() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push('/login');
-      return;
-    }
+    if (!user) { router.push('/login'); return; }
     setUser(user);
-    
-    const { data: prof } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+    const { data: prof } = await supabase.from('users').select('*').eq('id', user.id).single();
     setProfile(prof);
-    
     await fetchTasks(user.id);
     setLoading(false);
   }
@@ -96,39 +82,19 @@ export default function PersonalTasks() {
   async function fetchTasks(uid: string) {
     if (!uid) return;
     const { data } = await supabase
-      .from('personal_tasks')
-      .select('*')
-      .eq('user_id', uid)
-      .order('order', { ascending: true });
+      .from('personal_tasks').select('*').eq('user_id', uid).order('order', { ascending: true });
     setTasks(data || []);
-
-    // Also fetch queued tasks
     const { data: queueData } = await supabase
-      .from('task_queue')
-      .select('*')
-      .eq('user_id', uid)
-      .order('queued_at', { ascending: false });
+      .from('task_queue').select('*').eq('user_id', uid).order('queued_at', { ascending: false });
     setQueuedTasks(queueData || []);
   }
 
   async function addTask(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !user) return;
-    
-    const { error } = await supabase
-      .from('personal_tasks')
-      .insert({
-        user_id: user.id,
-        title: title.trim(),
-        status: 'pending',
-        order: tasks.length
-      });
-    
-    if (error) {
-      console.error('Add task error:', error);
-      return;
-    }
-    
+    await supabase.from('personal_tasks').insert({
+      user_id: user.id, title: title.trim(), status: 'pending', order: tasks.length,
+    });
     setTitle('');
     fetchTasks(user.id);
   }
@@ -141,115 +107,46 @@ export default function PersonalTasks() {
   async function moveQueueToToday(queuedTaskId: string) {
     const queuedTask = queuedTasks.find(t => t.id === queuedTaskId);
     if (!queuedTask || !user) return;
-
     try {
-      // Insert to personal_tasks
       const { data: newTask, error: insertError } = await supabase
         .from('personal_tasks')
-        .insert({
-          user_id: queuedTask.user_id,
-          title: queuedTask.title,
-          status: queuedTask.status,
-          order: tasks.length,
-        })
-        .select()
-        .single();
-
+        .insert({ user_id: queuedTask.user_id, title: queuedTask.title, status: queuedTask.status, order: tasks.length })
+        .select().single();
       if (insertError) throw insertError;
-
-      // Delete from queue
-      const { error: deleteError } = await supabase
-        .from('task_queue')
-        .delete()
-        .eq('id', queuedTask.id);
-
-      if (deleteError) {
-        // Rollback: delete the inserted task
-        await supabase.from('personal_tasks').delete().eq('id', newTask.id);
-        throw deleteError;
-      }
-
-      // Refresh tasks
+      const { error: deleteError } = await supabase.from('task_queue').delete().eq('id', queuedTask.id);
+      if (deleteError) { await supabase.from('personal_tasks').delete().eq('id', newTask.id); throw deleteError; }
       fetchTasks(user.id);
-    } catch (error) {
-      console.error('Failed to move task from queue:', error);
-    }
+    } catch (error) { console.error('Failed to move task from queue:', error); }
   }
 
-  function handleDragStart(event: DragStartEvent) {
-    setActiveId(event.active.id as string);
-  }
+  function handleDragStart(event: DragStartEvent) { setActiveId(event.active.id as string); }
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    
-    if (!over) {
-      setActiveId(null);
-      return;
-    }
-
+    if (!over) { setActiveId(null); return; }
     const activeTask = tasks.find(t => t.id === active.id);
-    if (!activeTask) return;
-
-    // Determine new status from drop zone
+    if (!activeTask) { setActiveId(null); return; }
     const overData = over.data.current;
     const newStatus = overData?.status || activeTask.status;
-
-    // Store original tasks for rollback
     const originalTasks = [...tasks];
-
     try {
       if (newStatus !== activeTask.status) {
-        // Status change - move to different column
-        const updatedTasks = tasks.map(t =>
-          t.id === activeTask.id ? { ...t, status: newStatus } : t
-        );
-        setTasks(updatedTasks);
-
-        const { error } = await supabase
-          .from('personal_tasks')
-          .update({
-            status: newStatus,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', activeTask.id);
-
+        setTasks(tasks.map(t => t.id === activeTask.id ? { ...t, status: newStatus } : t));
+        const { error } = await supabase.from('personal_tasks')
+          .update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', activeTask.id);
         if (error) throw error;
       } else if (active.id !== over.id) {
-        // Reorder within same column
         const tasksInColumn = tasks.filter(t => t.status === activeTask.status);
         const oldIndex = tasksInColumn.findIndex(t => t.id === active.id);
         const newIndex = tasksInColumn.findIndex(t => t.id === over.id);
-
         const reordered = arrayMove(tasksInColumn, oldIndex, newIndex);
-        
-        // Update order for all tasks in column
-        const updates = reordered.map((task, index) => ({
-          id: task.id,
-          order: index
-        }));
-
-        // Optimistic update
-        const updatedTasks = tasks.map(t => {
-          const update = updates.find(u => u.id === t.id);
-          return update ? { ...t, order: update.order } : t;
-        });
-        setTasks(updatedTasks);
-
-        // Batch update to database
+        const updates = reordered.map((task, index) => ({ id: task.id, order: index }));
+        setTasks(tasks.map(t => { const u = updates.find(x => x.id === t.id); return u ? { ...t, order: u.order } : t; }));
         for (const update of updates) {
-          await supabase
-            .from('personal_tasks')
-            .update({ order: update.order })
-            .eq('id', update.id);
+          await supabase.from('personal_tasks').update({ order: update.order }).eq('id', update.id);
         }
       }
-    } catch (error) {
-      console.error('Drag update failed:', error);
-      // Rollback on error
-      setTasks(originalTasks);
-    }
-
+    } catch (error) { console.error('Drag update failed:', error); setTasks(originalTasks); }
     setActiveId(null);
   }
 
@@ -259,115 +156,216 @@ export default function PersonalTasks() {
   const inProgressTasks = tasks.filter(t => t.status === 'in_progress');
   const doneTasks = tasks.filter(t => t.status === 'done');
   const activeTask = tasks.find(t => t.id === activeId);
+  const completionPct = tasks.length > 0 ? Math.round((doneTasks.length / tasks.length) * 100) : 0;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-main)' }}>
+      {/* Subtle paper texture overlay */}
+      <div style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
+      }} />
+
       <Sidebar user={profile} />
-      <main style={{ marginLeft: '220px', flex: 1, padding: '2.5rem 3rem' }}>
+
+      <main style={{ marginLeft: '220px', flex: 1, padding: '2.5rem 3rem', position: 'relative', zIndex: 1 }}>
+
         {/* Header */}
-        <div style={{ marginBottom: '2.5rem' }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', letterSpacing: '3px', marginBottom: '6px' }}>
-            PERSONAL
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          style={{ marginBottom: '2rem' }}
+        >
+          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '4px', marginBottom: '4px' }}>
+            PERSONAL WORKSPACE
           </div>
-          <h1 style={{ fontSize: '2rem', color: 'var(--text-main)', fontWeight: 'normal' }}>
+          <h1 style={{
+            fontSize: '2.2rem',
+            color: 'var(--text-main)',
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontWeight: '700',
+            letterSpacing: '0.5px',
+          }}>
             My Tasks
           </h1>
-          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
-            <Stat label="Total" value={tasks.length} />
-            <Stat label="Done" value={doneTasks.length} accent />
-            <Stat label="Remaining" value={tasks.length - doneTasks.length} />
-          </div>
-        </div>
+          {/* Gold underline */}
+          <div style={{
+            height: '2px',
+            width: '60px',
+            background: 'linear-gradient(to right, var(--accent), transparent)',
+            marginTop: '0.5rem',
+          }} />
+        </motion.div>
 
-        {/* Add form */}
-        <form onSubmit={addTask} style={{ display: 'flex', gap: '0.8rem', marginBottom: '2rem', maxWidth: '100%' }}>
-          <input
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="Tambah tugas baru..."
-            style={{
-              flex: 1,
-              padding: '0.8rem 1.2rem',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              borderRadius: '10px',
-              color: 'var(--text-main)',
-              fontSize: '0.9rem',
-              outline: 'none',
-            }}
-          />
-          <button type="submit" style={{
-            padding: '0.8rem 1.5rem',
-            background: 'var(--accent)',
-            border: 'none',
-            borderRadius: '10px',
-            color: '#1a1612',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            letterSpacing: '1px',
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}
+        >
+          <StatCard label="Total Tugas" value={tasks.length} icon="◈" />
+          <StatCard label="Selesai" value={doneTasks.length} icon="✦" accent />
+          <StatCard label="Tersisa" value={tasks.length - doneTasks.length} icon="◎" />
+          {/* Progress bar card */}
+          <div style={{
+            flex: 2,
+            minWidth: '180px',
+            background: 'rgba(62,44,27,0.7)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(201,165,59,0.15)',
+            borderRadius: '12px',
+            padding: '1rem 1.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            gap: '0.5rem',
           }}>
-            + ADD
-          </button>
-        </form>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '1.5px' }}>PROGRESS</span>
+              <span style={{ fontSize: '1rem', color: 'var(--accent)', fontWeight: '700' }}>{completionPct}%</span>
+            </div>
+            <div style={{ height: '4px', background: 'rgba(201,165,59,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${completionPct}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                style={{ height: '100%', background: 'linear-gradient(to right, var(--accent), #e8c96a)', borderRadius: '2px' }}
+              />
+            </div>
+          </div>
+        </motion.div>
 
-        {/* Drag and Drop Columns */}
+        {/* Add Task Input */}
+        <motion.form
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          onSubmit={addTask}
+          style={{ marginBottom: '2rem', maxWidth: '640px' }}
+        >
+          <div style={{
+            display: 'flex',
+            gap: '0',
+            background: 'rgba(62,44,27,0.7)',
+            backdropFilter: 'blur(12px)',
+            border: inputFocused ? '1px solid rgba(201,165,59,0.6)' : '1px solid rgba(201,165,59,0.2)',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+            boxShadow: inputFocused ? '0 0 16px rgba(201,165,59,0.12)' : 'none',
+          }}>
+            <span style={{
+              padding: '0 1rem',
+              display: 'flex',
+              alignItems: 'center',
+              color: 'var(--text-muted)',
+              fontSize: '0.9rem',
+            }}>
+              ✦
+            </span>
+            <input
+              ref={inputRef}
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
+              placeholder="Tambah tugas baru..."
+              style={{
+                flex: 1,
+                padding: '0.9rem 0',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-main)',
+                fontSize: '0.9rem',
+                outline: 'none',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!title.trim()}
+              style={{
+                padding: '0.9rem 1.5rem',
+                background: title.trim() ? 'var(--accent)' : 'rgba(201,165,59,0.2)',
+                border: 'none',
+                color: title.trim() ? '#1a1612' : 'var(--text-muted)',
+                fontWeight: '700',
+                cursor: title.trim() ? 'pointer' : 'default',
+                fontSize: '0.75rem',
+                letterSpacing: '1.5px',
+                transition: 'all 0.2s',
+              }}
+            >
+              + ADD
+            </button>
+          </div>
+        </motion.form>
+
+        {/* Kanban Columns */}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-            <DroppableColumn
-              status="pending"
-              title="Pending"
-              tasks={pendingTasks}
-              onDelete={deleteTask}
-            />
-            <DroppableColumn
-              status="in_progress"
-              title="In Progress"
-              tasks={inProgressTasks}
-              onDelete={deleteTask}
-            />
-            <DroppableColumn
-              status="done"
-              title="Done"
-              tasks={doneTasks}
-              onDelete={deleteTask}
-            />
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', flexWrap: 'wrap' }}
+          >
+            <DroppableColumn status="pending" title="Pending" tasks={pendingTasks} onDelete={deleteTask} />
+            <DroppableColumn status="in_progress" title="In Progress" tasks={inProgressTasks} onDelete={deleteTask} />
+            <DroppableColumn status="done" title="Done" tasks={doneTasks} onDelete={deleteTask} />
+          </motion.div>
 
-          <DragOverlay>
-            {activeTask ? (
-              <div style={{ opacity: 0.8 }}>
-                <DraggableTask task={activeTask} />
-              </div>
-            ) : null}
+          <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+            {activeTask ? <DraggableTask task={activeTask} isOverlay /> : null}
           </DragOverlay>
         </DndContext>
 
-        {/* Task Queue */}
-        <TaskQueue queuedTasks={queuedTasks} onMoveToToday={moveQueueToToday} />
+        {/* Queue Section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
+          <TaskQueue queuedTasks={queuedTasks} onMoveToToday={moveQueueToToday} />
+        </motion.div>
       </main>
     </div>
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+function StatCard({ label, value, icon, accent }: { label: string; value: number; icon: string; accent?: boolean }) {
   return (
     <div style={{
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border)',
-      borderRadius: '10px',
-      padding: '0.6rem 1.2rem',
-      textAlign: 'center',
+      background: 'rgba(62,44,27,0.7)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: accent ? '1px solid rgba(201,165,59,0.35)' : '1px solid rgba(201,165,59,0.15)',
+      borderRadius: '12px',
+      padding: '1rem 1.25rem',
+      minWidth: '110px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.25rem',
+      boxShadow: accent ? '0 0 16px rgba(201,165,59,0.08)' : 'none',
     }}>
-      <div style={{ fontSize: '1.4rem', color: accent ? 'var(--accent)' : 'var(--text-main)', fontWeight: 'bold' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span style={{ fontSize: '0.8rem', color: accent ? 'var(--accent)' : 'var(--text-muted)' }}>{icon}</span>
+        <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '1.5px' }}>{label.toUpperCase()}</span>
+      </div>
+      <div style={{
+        fontSize: '1.8rem',
+        color: accent ? 'var(--accent)' : 'var(--text-main)',
+        fontFamily: "'Playfair Display', Georgia, serif",
+        fontWeight: '700',
+        lineHeight: 1,
+      }}>
         {value}
       </div>
-      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '1px' }}>{label}</div>
     </div>
   );
 }
