@@ -38,19 +38,25 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
         alignItems: 'center',
         gap: '0.6rem',
         padding: '6px 14px 6px 8px',
-        background: isDragging ? 'rgba(201,165,59,0.15)' : 'rgba(26,24,18,0.8)',
-        border: isDragging ? '1.5px solid var(--accent)' : '1px solid rgba(201,165,59,0.25)',
+        background: isDragging ? 'rgba(201,165,59,0.15)' : 'var(--bg-card)',
+        border: isDragging ? '1.5px solid var(--accent)' : '1px solid var(--border)',
         borderRadius: '999px',
         opacity: isDragging ? 0.5 : 1,
         cursor: disabled ? 'not-allowed' : 'grab',
-        transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
+        transition: 'border-color 0.2s, background 0.2s',
         boxShadow: isDragging ? '0 4px 16px rgba(201,165,59,0.2)' : 'none',
-        // Critical: prevent text selection and browser drag behavior
+        // Prevent browser native drag (image ghost) and text selection
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        touchAction: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
+        // Do NOT set touchAction: none here — dnd-kit handles it via listeners
         WebkitTouchCallout: 'none',
-      }}
+        // Prevent browser from treating this as a draggable HTML element
+        draggable: false,
+      } as React.CSSProperties}
+      // Prevent native HTML5 drag
+      onDragStart={e => e.preventDefault()}
     >
       <div style={{
         width: '28px',
@@ -65,6 +71,8 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
         fontSize: '0.65rem',
         flexShrink: 0,
         letterSpacing: '0.5px',
+        // Avatar tidak perlu pointer events sendiri
+        pointerEvents: 'none',
       }}>
         {getInitials(user.username)}
       </div>
@@ -72,10 +80,11 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
         color: 'var(--text-main)',
         fontSize: '0.85rem',
         fontWeight: '500',
+        // Teks tidak boleh selectable saat drag
         userSelect: 'none',
         WebkitUserSelect: 'none',
         pointerEvents: 'none',
-      }}>
+      } as React.CSSProperties}>
         {user.username}
       </span>
     </div>

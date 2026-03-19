@@ -6,12 +6,11 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
-  KeyboardSensor,
   useSensor,
   useSensors,
   DragStartEvent,
   DragEndEvent,
-  pointerWithin,
+  rectIntersection,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -335,7 +334,7 @@ export default function FamilyTasks() {
         {/* Task List with Drag and Drop */}
         <DndContext
           sensors={sensors}
-          collisionDetection={pointerWithin}
+          collisionDetection={rectIntersection}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
