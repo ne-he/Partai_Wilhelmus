@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
-const PARTICLE_COUNT_DESKTOP = 80;
-const PARTICLE_COUNT_MOBILE = 40;
+const PARTICLE_COUNT_DESKTOP = 180;
+const PARTICLE_COUNT_MOBILE = 80;
 const REPULSION_RADIUS = 120;
 
 function getParticleColors(theme) {
@@ -32,15 +32,15 @@ function createParticle(width, height, theme, index, total) {
     r = 1 + Math.random() * 2; // 1–3px
     baseOpacity = 0.2 + Math.random() * 0.6;
   } else if (theme === "vintage") {
-    r = 1 + Math.random() * 2;
-    baseOpacity = 0.3 + Math.random() * 0.4;
+    r = 0.5 + Math.random() * 1.5;
+    baseOpacity = 0.2 + Math.random() * 0.5;
   } else {
     r = 1 + Math.random() * 2;
     baseOpacity = 0.4;
   }
 
-  // Vintage: slower drift
-  const speedFactor = theme === "vintage" ? 0.3 : 1;
+  // Vintage: slower drift, more varied
+  const speedFactor = theme === "vintage" ? 0.2 : 1;
   const vx = (Math.random() - 0.5) * 1.5 * speedFactor;
   const vy = (Math.random() - 0.5) * 1.5 * speedFactor;
 

@@ -55,8 +55,6 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
         // Prevent browser from treating this as a draggable HTML element
         draggable: false,
       } as React.CSSProperties}
-      // Prevent native HTML5 drag
-      onDragStart={e => e.preventDefault()}
     >
       <div style={{
         width: '28px',

@@ -2,7 +2,6 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { motion, AnimatePresence } from 'framer-motion';
 import DraggableTask from './DraggableTask';
 
 interface PersonalTask {
@@ -23,24 +22,9 @@ interface DroppableColumnProps {
 }
 
 const columnConfig = {
-  pending: {
-    accent: '#c8a96e',
-    label: 'PENDING',
-    emptyMsg: 'Belum ada tugas',
-    dot: 'rgba(200,169,110,0.6)',
-  },
-  in_progress: {
-    accent: '#64a0c8',
-    label: 'IN PROGRESS',
-    emptyMsg: 'Tidak ada yang dikerjakan',
-    dot: 'rgba(100,160,200,0.6)',
-  },
-  done: {
-    accent: '#64b478',
-    label: 'DONE',
-    emptyMsg: 'Belum ada yang selesai',
-    dot: 'rgba(100,180,120,0.6)',
-  },
+  pending: { accent: '#c8a96e', label: 'PENDING', emptyMsg: 'Belum ada tugas' },
+  in_progress: { accent: '#00ffff', label: 'IN PROGRESS', emptyMsg: 'Tidak ada yang dikerjakan' },
+  done: { accent: '#00ff9d', label: 'DONE', emptyMsg: 'Belum ada yang selesai' },
 };
 
 export default function DroppableColumn({ status, tasks, title, onDelete }: DroppableColumnProps) {
@@ -57,110 +41,66 @@ export default function DroppableColumn({ status, tasks, title, onDelete }: Drop
       style={{
         flex: 1,
         minWidth: '260px',
-        background: isOver
-          ? `rgba(26,24,18,0.98)`
-          : 'rgba(15,14,11,0.7)',
+        background: isOver ? 'rgba(0,30,30,0.9)' : 'rgba(0,20,20,0.7)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        border: isOver
-          ? `1.5px solid ${cfg.accent}`
-          : '1px solid rgba(201,165,59,0.15)',
-        borderRadius: '14px',
+        border: isOver ? `1.5px solid ${cfg.accent}` : '1px solid rgba(0,255,157,0.12)',
+        borderRadius: '10px',
         padding: '1.25rem',
         transition: 'all 0.2s ease',
-        boxShadow: isOver
-          ? `0 0 24px ${cfg.accent}22`
-          : '0 4px 16px rgba(0,0,0,0.2)',
+        boxShadow: isOver ? `0 0 20px ${cfg.accent}30` : '0 4px 16px rgba(0,0,0,0.3)',
       }}
     >
-      {/* Column header */}
+      {/* Header */}
       <div style={{ marginBottom: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
           <div style={{
-            width: '8px', height: '8px', borderRadius: '50%',
-            background: cfg.dot,
-            boxShadow: `0 0 6px ${cfg.dot}`,
+            width: '7px', height: '7px', borderRadius: '50%',
+            background: cfg.accent, boxShadow: `0 0 6px ${cfg.accent}`,
           }} />
           <span style={{
-            fontSize: '0.65rem',
-            letterSpacing: '2.5px',
-            color: cfg.accent,
-            fontWeight: '600',
-            fontFamily: 'Inter, sans-serif',
+            fontSize: '0.6rem', letterSpacing: '3px', color: cfg.accent,
+            fontFamily: 'monospace', fontWeight: '600',
           }}>
             {cfg.label}
           </span>
           <span style={{
-            marginLeft: 'auto',
-            fontSize: '0.7rem',
-            color: 'var(--text-muted)',
-            background: 'rgba(201,165,59,0.1)',
-            border: '1px solid rgba(201,165,59,0.15)',
-            borderRadius: '20px',
-            padding: '1px 8px',
+            marginLeft: 'auto', fontSize: '0.7rem', color: 'rgba(0,255,157,0.5)',
+            background: 'rgba(0,255,157,0.06)', border: '1px solid rgba(0,255,157,0.12)',
+            borderRadius: '20px', padding: '1px 8px', fontFamily: 'monospace',
           }}>
             {tasks.length}
           </span>
         </div>
         <h3 style={{
-          fontSize: '1.1rem',
-          color: 'var(--text-main)',
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontWeight: '600',
-          letterSpacing: '0.3px',
+          fontSize: '1rem', color: '#e0f2fe', fontFamily: 'monospace',
+          fontWeight: '600', letterSpacing: '1px',
         }}>
           {title}
         </h3>
-        {/* Gold underline */}
         <div style={{
-          height: '1px',
-          background: `linear-gradient(to right, ${cfg.accent}60, transparent)`,
-          marginTop: '0.6rem',
+          height: '1px', marginTop: '0.6rem',
+          background: `linear-gradient(to right, ${cfg.accent}50, transparent)`,
         }} />
       </div>
 
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
         <div style={{ minHeight: '180px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <AnimatePresence>
-            {tasks.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '2rem 0',
-                  gap: '0.5rem',
-                }}
-              >
-                <div style={{ fontSize: '1.5rem', opacity: 0.3 }}>◇</div>
-                <p style={{
-                  color: 'var(--text-muted)',
-                  fontSize: '0.75rem',
-                  textAlign: 'center',
-                  fontStyle: 'italic',
-                }}>
-                  {cfg.emptyMsg}
-                </p>
-              </motion.div>
-            ) : (
-              tasks.map(task => (
-                <motion.div
-                  key={task.id}
-                  layout
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <DraggableTask task={task} onDelete={onDelete} />
-                </motion.div>
-              ))
-            )}
-          </AnimatePresence>
+          {tasks.length === 0 ? (
+            <div style={{
+              flex: 1, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', padding: '2rem 0', gap: '0.5rem',
+            }}>
+              <div style={{ fontSize: '1.2rem', opacity: 0.2, color: cfg.accent }}>[ ]</div>
+              <p style={{ color: 'rgba(107,123,123,0.7)', fontSize: '0.72rem', fontFamily: 'monospace', fontStyle: 'italic' }}>
+                {cfg.emptyMsg}
+              </p>
+            </div>
+          ) : (
+            tasks.map(task => (
+              <DraggableTask key={task.id} task={task} onDelete={onDelete} />
+            ))
+          )}
         </div>
       </SortableContext>
     </div>
