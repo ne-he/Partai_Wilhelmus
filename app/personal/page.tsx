@@ -212,7 +212,7 @@ export default function PersonalTasks() {
           <div style={{
             flex: 2,
             minWidth: '180px',
-            background: 'rgba(62,44,27,0.7)',
+            background: 'rgba(22,20,16,0.85)',
             backdropFilter: 'blur(12px)',
             border: '1px solid rgba(201,165,59,0.15)',
             borderRadius: '12px',
@@ -248,7 +248,7 @@ export default function PersonalTasks() {
           <div style={{
             display: 'flex',
             gap: '0',
-            background: 'rgba(62,44,27,0.7)',
+            background: 'rgba(22,20,16,0.85)',
             backdropFilter: 'blur(12px)',
             border: inputFocused ? '1px solid rgba(201,165,59,0.6)' : '1px solid rgba(201,165,59,0.2)',
             borderRadius: '12px',
@@ -341,7 +341,7 @@ export default function PersonalTasks() {
 function StatCard({ label, value, icon, accent }: { label: string; value: number; icon: string; accent?: boolean }) {
   return (
     <div style={{
-      background: 'rgba(62,44,27,0.7)',
+      background: 'rgba(22,20,16,0.85)',
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
       border: accent ? '1px solid rgba(201,165,59,0.35)' : '1px solid rgba(201,165,59,0.15)',

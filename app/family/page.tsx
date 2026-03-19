@@ -200,7 +200,7 @@ export default function FamilyTasks() {
             { label: 'SELESAI', value: doneTasks.length, icon: '●', accent: true },
           ].map(s => (
             <div key={s.label} style={{
-              background: 'rgba(62,44,27,0.7)',
+              background: 'rgba(22,20,16,0.85)',
               backdropFilter: 'blur(12px)',
               border: s.accent ? '1px solid rgba(201,165,59,0.35)' : '1px solid rgba(201,165,59,0.15)',
               borderRadius: '12px',
@@ -230,7 +230,7 @@ export default function FamilyTasks() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 }}
             style={{
-              background: 'rgba(62,44,27,0.6)',
+              background: 'rgba(22,20,16,0.8)',
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(201,165,59,0.15)',
               borderRadius: '14px',
@@ -268,7 +268,7 @@ export default function FamilyTasks() {
                     onClick={() => addTask(undefined, t)}
                     style={{
                       padding: '5px 14px',
-                      background: 'rgba(44,26,14,0.6)',
+                      background: 'rgba(15,14,11,0.7)',
                       border: '1px solid rgba(201,165,59,0.2)',
                       borderRadius: '20px',
                       color: 'var(--text-muted)',
@@ -294,7 +294,7 @@ export default function FamilyTasks() {
               <form onSubmit={addTask} style={{ maxWidth: '560px' }}>
                 <div style={{
                   display: 'flex',
-                  background: 'rgba(44,26,14,0.6)',
+                  background: 'rgba(15,14,11,0.7)',
                   border: inputFocused ? '1px solid rgba(201,165,59,0.6)' : '1px solid rgba(201,165,59,0.2)',
                   borderRadius: '10px',
                   overflow: 'hidden',

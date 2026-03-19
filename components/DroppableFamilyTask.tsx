@@ -53,7 +53,7 @@ export default function DroppableFamilyTask({
     <div
       ref={setNodeRef}
       style={{
-        background: isOver ? 'rgba(62,44,27,0.95)' : 'rgba(62,44,27,0.7)',
+        background: isOver ? 'rgba(26,24,18,0.98)' : 'rgba(22,20,16,0.8)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         border: isOver ? `1.5px solid var(--accent)` : '1px solid rgba(201,165,59,0.18)',

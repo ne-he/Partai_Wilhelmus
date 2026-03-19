@@ -58,8 +58,8 @@ export default function DroppableColumn({ status, tasks, title, onDelete }: Drop
         flex: 1,
         minWidth: '260px',
         background: isOver
-          ? `rgba(62,44,27,0.9)`
-          : 'rgba(44,26,14,0.6)',
+          ? `rgba(26,24,18,0.98)`
+          : 'rgba(15,14,11,0.7)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         border: isOver

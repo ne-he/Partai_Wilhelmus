@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  /* Earthtone / Mafia Vintage Theme */
-  --bg-main: #2C1A0E;
-  --bg-card: #3E2C1B;
-  --bg-card2: #2e2820;
+  /* Mafia Vintage Dark Theme */
+  --bg-main: #0f0e0b;
+  --bg-card: #1a1812;
+  --bg-card2: #161410;
   --accent: #C9A53B;
   --accent2: #a07850;
-  --text-main: #F5E6D3;
-  --text-muted: #9c8a72;
-  --border: rgba(201, 165, 59, 0.2);
+  --text-main: #e8dcc8;
+  --text-muted: #7a7060;
+  --border: rgba(201, 165, 59, 0.18);
 }
 
 * {

@@ -50,8 +50,8 @@ export default function DraggableTask({ task, onDelete, isOverlay }: DraggableTa
         {...listeners}
         style={{
           background: isDragging || isOverlay
-            ? 'rgba(62,44,27,0.95)'
-            : 'rgba(62,44,27,0.7)',
+            ? 'rgba(26,24,18,0.98)'
+            : 'rgba(22,20,16,0.85)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
           border: isDragging || isOverlay
