@@ -19,7 +19,6 @@ import Sidebar from '../../components/Sidebar';
 import DroppableColumn from '../../components/DroppableColumn';
 import DraggableTask from '../../components/DraggableTask';
 import TaskQueue from '../../components/TaskQueue';
-import PomodoroTimer from '../../components/PomodoroTimer';
 
 export const dynamic = 'force-dynamic';
 
@@ -311,9 +310,6 @@ export default function PersonalTasks() {
             + ADD
           </button>
         </form>
-
-        {/* Pomodoro Timer */}
-        <PomodoroTimer tasks={tasks} userId={user?.id || null} />
 
         {/* Drag and Drop Columns */}
         <DndContext
