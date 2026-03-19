@@ -8,7 +8,7 @@
 CREATE TABLE IF NOT EXISTS focus_sessions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  task_id BIGINT REFERENCES personal_tasks(id) ON DELETE SET NULL,
+  task_id UUID REFERENCES personal_tasks(id) ON DELETE SET NULL,
   start_time TIMESTAMPTZ NOT NULL,
   end_time TIMESTAMPTZ NOT NULL,
   duration INTEGER NOT NULL, -- in minutes
