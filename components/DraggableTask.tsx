@@ -34,7 +34,7 @@ const statusColor: Record<string, string> = {
 export default function DraggableTask({ task, onDelete, isOverlay }: DraggableTaskProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
-    data: { type: 'task', task },
+    data: { type: 'task', task, status: task.status },
   });
 
   const style = {

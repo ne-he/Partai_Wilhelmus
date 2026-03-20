@@ -223,7 +223,14 @@ export default function FamilyTasks() {
           ))}
         </motion.div>
 
-        {isEditor && (
+        {/* Task List with Drag and Drop */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={rectIntersection}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          {isEditor && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -329,15 +336,8 @@ export default function FamilyTasks() {
               </form>
             </div>
           </motion.div>
-        )}
+          )}
 
-        {/* Task List with Drag and Drop */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={rectIntersection}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
