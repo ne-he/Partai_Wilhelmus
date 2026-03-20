@@ -123,11 +123,13 @@ async function performUserReset(supabase: any, userId: string) {
   }
 
   // Step 3: Insert into task_queue
+  const now = new Date().toISOString();
   const queueData = tasksToQueue.map((task: any, index: number) => ({
     user_id: task.user_id,
     title: task.title,
     status: task.status,
     original_created_at: task.created_at,
+    queued_at: now,
     order: index,
   }));
 
@@ -163,4 +165,14 @@ async function performUserReset(supabase: any, userId: string) {
     deletedDone: true,
     queued: tasksToQueue.length,
   };
+}
+
+// POST endpoint for manual trigger (testing)
+export async function POST(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+  if (authHeader !== expectedAuth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return GET(request);
 }

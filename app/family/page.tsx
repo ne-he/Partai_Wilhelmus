@@ -12,7 +12,6 @@ import {
   DragEndEvent,
   rectIntersection,
 } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../Lib/supabaseClient';
 import Sidebar from '../../components/Sidebar';
@@ -383,9 +382,18 @@ export default function FamilyTasks() {
             </AnimatePresence>
           </motion.div>
 
-          <DragOverlay>
+          <DragOverlay
+            dropAnimation={{
+              duration: 220,
+              easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+            }}
+          >
             {activeUser ? (
-              <div style={{ opacity: 0.9, transform: 'rotate(3deg) scale(1.05)' }}>
+              <div style={{
+                opacity: 0.92,
+                transform: 'rotate(2deg) scale(1.06)',
+                filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.5)) drop-shadow(0 0 8px rgba(201,165,59,0.2))',
+              }}>
                 <DraggableMember user={activeUser} />
               </div>
             ) : null}
