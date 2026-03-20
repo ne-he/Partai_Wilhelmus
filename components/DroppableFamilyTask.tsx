@@ -1,7 +1,7 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface FamilyTask {
   id: string;
@@ -26,17 +26,21 @@ interface DroppableFamilyTaskProps {
 }
 
 const statusConfig = {
-  pending: { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', label: 'Pending', icon: '○' },
-  in_progress: { color: '#64a0c8', bg: 'rgba(100,160,200,0.1)', label: 'In Progress', icon: '◑' },
-  done: { color: '#64b478', bg: 'rgba(100,180,120,0.1)', label: 'Done', icon: '●' },
+  pending: { color: '#c8a96e', bg: 'rgba(200,169,110,0.08)', label: 'Pending', icon: '○' },
+  in_progress: { color: '#a07850', bg: 'rgba(160,120,80,0.08)', label: 'In Progress', icon: '◑' },
+  done: { color: '#7a9e6e', bg: 'rgba(122,158,110,0.08)', label: 'Done', icon: '●' },
 };
 
 function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
-function getRoleColor(role: string) {
-  return role === 'papa' || role === 'mama' ? '#C9A53B' : '#64a0c8';
+function getRoleConfig(role: string) {
+  switch (role) {
+    case 'papa': return { color: '#c8a96e', symbol: '♦' };
+    case 'mama': return { color: '#b8956a', symbol: '♠' };
+    default: return { color: '#9c8a72', symbol: '♣' };
+  }
 }
 
 export default function DroppableFamilyTask({
@@ -50,32 +54,57 @@ export default function DroppableFamilyTask({
   const s = statusConfig[task.status] || statusConfig.pending;
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
+      animate={{
+        scale: isOver ? 1.015 : 1,
+        borderColor: isOver ? 'rgba(201,165,59,0.7)' : 'rgba(201,165,59,0.18)',
+      }}
+      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
       style={{
-        background: isOver ? 'rgba(26,24,18,0.98)' : 'rgba(22,20,16,0.8)',
+        background: isOver ? 'rgba(28,24,16,0.98)' : 'rgba(22,20,16,0.8)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        border: isOver ? `1.5px solid var(--accent)` : '1px solid rgba(201,165,59,0.18)',
-        borderRadius: '12px',
-        padding: '1rem 1.25rem',
-        transition: 'all 0.2s ease',
+        border: '1px solid rgba(201,165,59,0.18)',
+        borderRadius: '8px',
+        padding: '0.9rem 1.1rem',
         boxShadow: isOver
-          ? '0 0 20px rgba(201,165,59,0.2), 0 4px 16px rgba(0,0,0,0.3)'
-          : '0 2px 8px rgba(0,0,0,0.15)',
+          ? '0 0 0 1px rgba(201,165,59,0.4), 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(201,165,59,0.1)'
+          : '0 2px 8px rgba(0,0,0,0.2)',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      {/* Gold shimmer line saat isOver */}
+      <AnimatePresence>
+        {isOver && (
+          <motion.div
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            exit={{ scaleX: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: '2px',
+              background: 'linear-gradient(to right, transparent, var(--accent), transparent)',
+              transformOrigin: 'left',
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
         {/* Status icon */}
-        <span style={{ fontSize: '0.85rem', color: s.color, flexShrink: 0 }}>{s.icon}</span>
+        <span style={{ fontSize: '0.8rem', color: s.color, flexShrink: 0, opacity: 0.9 }}>{s.icon}</span>
 
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             color: task.status === 'done' ? 'var(--text-muted)' : 'var(--text-main)',
             textDecoration: task.status === 'done' ? 'line-through' : 'none',
-            fontSize: '0.9rem',
-            marginBottom: assignedUser || isOver ? '0.5rem' : 0,
+            fontSize: '0.875rem',
+            fontFamily: "'Playfair Display', Georgia, serif",
+            marginBottom: '0.35rem',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -83,39 +112,63 @@ export default function DroppableFamilyTask({
             {task.title}
           </p>
 
-          {/* Assigned user badge */}
-          {assignedUser ? (
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '3px 10px',
-              background: 'rgba(201,165,59,0.1)',
-              border: '1px solid rgba(201,165,59,0.2)',
-              borderRadius: '20px',
-              fontSize: '0.72rem',
-              color: 'var(--accent)',
-            }}>
-              <div style={{
-                width: '18px', height: '18px', borderRadius: '50%',
-                background: getRoleColor(assignedUser.role),
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#1a1612', fontWeight: '700', fontSize: '0.55rem',
-              }}>
-                {getInitials(assignedUser.username)}
-              </div>
-              {assignedUser.username}
-            </div>
-          ) : (
-            <div style={{
-              fontSize: '0.7rem',
-              color: isOver ? 'var(--accent)' : 'var(--text-muted)',
-              fontStyle: 'italic',
-              transition: 'color 0.2s',
-            }}>
-              {isOver ? '✦ Drop untuk assign' : 'Drag anggota ke sini untuk assign'}
-            </div>
-          )}
+          {/* Assigned user badge — animasi masuk */}
+          <AnimatePresence mode="wait">
+            {assignedUser ? (
+              <motion.div
+                key={assignedUser.id}
+                initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '2px 10px 2px 6px',
+                  background: 'rgba(201,165,59,0.08)',
+                  border: '1px solid rgba(201,165,59,0.2)',
+                  borderRadius: '3px',
+                  fontSize: '0.7rem',
+                  color: 'var(--accent)',
+                }}
+              >
+                {/* Mini avatar */}
+                <div style={{
+                  width: '16px', height: '16px', borderRadius: '2px',
+                  background: getRoleConfig(assignedUser.role).color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#1a1612', fontWeight: '800', fontSize: '0.5rem',
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  flexShrink: 0,
+                }}>
+                  {getInitials(assignedUser.username)}
+                </div>
+                <span style={{ fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.3px' }}>
+                  {assignedUser.username}
+                </span>
+                <span style={{ fontSize: '0.5rem', opacity: 0.6, letterSpacing: '1px' }}>
+                  {getRoleConfig(assignedUser.role).symbol}
+                </span>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  fontSize: '0.68rem',
+                  color: isOver ? 'var(--accent)' : 'var(--text-muted)',
+                  fontStyle: 'italic',
+                  transition: 'color 0.2s',
+                  letterSpacing: '0.2px',
+                }}
+              >
+                {isOver ? '✦ Lepaskan untuk assign' : 'Drag anggota ke sini'}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Status selector */}
@@ -125,14 +178,16 @@ export default function DroppableFamilyTask({
             onChange={e => onStatusChange(task.id, e.target.value)}
             style={{
               background: s.bg,
-              border: `1px solid ${s.color}50`,
-              borderRadius: '20px',
+              border: `1px solid ${s.color}40`,
+              borderRadius: '4px',
               color: s.color,
-              padding: '4px 10px',
-              fontSize: '0.72rem',
+              padding: '4px 8px',
+              fontSize: '0.68rem',
               cursor: 'pointer',
               outline: 'none',
               flexShrink: 0,
+              fontFamily: 'Georgia, serif',
+              letterSpacing: '0.3px',
             }}
           >
             <option value="pending">Pending</option>
@@ -148,33 +203,34 @@ export default function DroppableFamilyTask({
             title="Hapus tugas"
             style={{
               flexShrink: 0,
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: '1px solid rgba(201,165,59,0.15)',
+              padding: '3px 9px',
+              borderRadius: '3px',
+              border: '1px solid rgba(201,165,59,0.12)',
               background: 'transparent',
               color: 'var(--text-muted)',
               cursor: 'pointer',
-              fontSize: '0.65rem',
-              letterSpacing: '0.5px',
+              fontSize: '0.6rem',
+              letterSpacing: '1px',
               transition: 'all 0.2s',
+              fontFamily: 'monospace',
             }}
             onMouseEnter={e => {
               const btn = e.currentTarget;
-              btn.style.borderColor = 'rgba(220,80,80,0.5)';
-              btn.style.color = '#dc5050';
-              btn.style.background = 'rgba(220,80,80,0.1)';
+              btn.style.borderColor = 'rgba(180,60,60,0.5)';
+              btn.style.color = '#b44040';
+              btn.style.background = 'rgba(180,60,60,0.08)';
             }}
             onMouseLeave={e => {
               const btn = e.currentTarget;
-              btn.style.borderColor = 'rgba(201,165,59,0.15)';
+              btn.style.borderColor = 'rgba(201,165,59,0.12)';
               btn.style.color = 'var(--text-muted)';
               btn.style.background = 'transparent';
             }}
           >
-            DEL
+            [DEL]
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
