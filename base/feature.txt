@@ -1,0 +1,83 @@
+Partai Wilhelmus — Overview Lengkap
+Apa ini?
+Web app manajemen tugas keluarga "Partai Wilhelmus" — private family productivity app yang dipakai oleh 4 anggota keluarga. Bukan app publik, murni internal keluarga.
+
+Tech Stack
+Teknologi	Kegunaan	Porsi
+Next.js 16 (App Router)	Framework utama, routing, SSR	~40%
+React 19	UI components, state management	(bagian dari Next.js)
+TypeScript	Type safety untuk komponen baru	~35% file
+JavaScript	Halaman lama (home, summary, login)	~65% file
+Tailwind CSS v4	Utility classes (minimal, mostly inline styles)	~10% styling
+CSS Variables	Tema warna utama (inline styles dominan)	~90% styling
+Supabase	Database PostgreSQL + Auth + Realtime	backend penuh
+Framer Motion	Animasi page transitions	1 komponen
+@dnd-kit	Drag-and-drop	4 komponen
+Vercel	Hosting + Cron Jobs	deployment
+Bahasa dominan: JavaScript ~65%, TypeScript ~35%. File halaman utama (home, login, summary, spectate) pakai .js, sedangkan komponen baru (family page, DnD components, TaskQueue) pakai .tsx.
+
+Fitur-Fitur Detail
+1. Autentikasi (/login)
+Pakai Supabase Auth dengan email + password. Setelah login berhasil, langsung redirect ke /home. Ada peta email ke nama panggilan yang hardcoded — 4 akun keluarga saja.
+
+2. Halaman Home (/home)
+Dashboard pribadi setelah login. Ini halaman paling kaya fitur:
+
+Jam Analog — SVG photorealistic dengan 3 jarum (jam, menit, detik), 60 tick marks, 12 angka, drop shadow. Pakai requestAnimationFrame untuk smooth sweep. Kalau reducedMotion aktif, fallback ke setInterval(1000).
+Jam Digital — Toggle manual atau otomatis aktif kalau reduced motion. Format HH:MM:SS.
+Greeting Personal — Sapaan berdasarkan email + waktu hari. "Good Morning Abah", "Good Evening Emak", dll. Update otomatis tiap menit.
+Particle Canvas — Background interaktif dengan 80 partikel yang kabur kalau kursor mendekat (repulsi radius 120px). Fixed fullscreen, z-index 0.
+Theme Picker — 3 tema: Vintage (earth-tone coklat emas), Minimal (flat dark hitam putih), Stellar (space biru gelap). Disimpan per user di localStorage.
+Task Summary — Ringkasan tugas: total, selesai, sisa. Klik → navigasi ke /personal.
+3. Halaman Personal (/personal)
+Manajemen tugas pribadi dengan sistem kanban:
+
+3 kolom: Pending → In Progress → Done
+Drag-and-drop antar kolom (ganti status) dan dalam kolom (reorder). Pakai @dnd-kit dengan optimistic update + rollback kalau gagal.
+Pomodoro Timer — Timer 25 menit kerja + 5 menit break. Auto-transition. Notifikasi suara saat selesai (Web Audio API). Persist ke localStorage jadi tetap jalan kalau pindah halaman. Simpan sesi ke tabel focus_sessions.
+Task Queue — Kolom kedua yang menampilkan tugas dari hari sebelumnya yang belum selesai. Bisa drag ke Today atau klik "Move to Today".
+4. Halaman Family (/family)
+Manajemen tugas keluarga bersama:
+
+Tampilkan semua family tasks dengan status
+Drag assignment — Papa/Mama bisa drag nama anggota ke task untuk assign. Otomatis ubah status ke in_progress. Child user tidak bisa drag assignment.
+Role-based: papa/mama punya akses penuh, anak hanya bisa update status task sendiri.
+5. Halaman Daily Verse (/summary)
+Halaman renungan harian dengan ayat Alkitab:
+
+Fetch dari bible-api.com/?random=1 setiap hari baru
+Cache di localStorage (dailyVerse + dailyVerseDate) — ayat sama sepanjang hari
+Desain premium: glassmorphism card dengan ornamen ❦ di sudut, tanda kutip besar opacity rendah, ornamen ✦ ◆ ✦, font Playfair Display italic
+Tombol Copy (salin ke clipboard), Share (Web Share API), Refresh (ayat baru tanpa ganggu cache harian)
+Loading spinner gold, error state dengan "Coba Lagi"
+Footer motto: "Keluarga adalah Kekuatan, Iman adalah Senjata"
+6. Halaman Spectate (/spectate/[user])
+Lihat tugas anggota keluarga lain secara read-only. Dynamic route — /spectate/papa, /spectate/mama, dll.
+
+7. Daily Reset Cron (/api/cron/daily-reset)
+Berjalan otomatis setiap tengah malam via Vercel Cron:
+
+Hapus semua task done
+Pindahkan task pending/in_progress ke tabel task_queue
+Proses per user, error satu user tidak menghentikan user lain
+Desain Visual
+Tema utama: mafia vintage — gelap, elegan, aksen emas.
+
+Background: #1a1612 (coklat sangat gelap)
+Card: #242018
+Aksen: #c8a96e (emas tua)
+Teks: #f0e6d3 (krem)
+Border: #3d3428
+Font heading: Playfair Display (serif)
+Font body: Georgia (serif)
+Semua styling pakai inline styles dengan CSS variables — bukan Tailwind class. Tailwind ada tapi hampir tidak dipakai di halaman utama. Glassmorphism di Daily Verse pakai backdrop-filter: blur(20px) dengan background rgba.
+
+Database (Supabase)
+4 tabel utama:
+
+users — profil user (username, role, email)
+personal_tasks — tugas pribadi (title, status, order, user_id)
+family_tasks — tugas keluarga (title, status, assigned_to)
+task_queue — tugas yang di-queue dari daily reset
+focus_sessions — riwayat sesi Pomodoro
+Semua dilindungi RLS (Row Level Security) — user hanya bisa akses data miliknya sendiri
