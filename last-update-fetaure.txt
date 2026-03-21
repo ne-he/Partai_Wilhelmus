@@ -1,0 +1,10 @@
+Komposisi file: .tsx 44% · .js 37% · .ts 15% · .css 4%
+
+Penjelasan per fitur:
+
+Homepage — jam analog SVG dari scratch, particle canvas, theme picker, greeting, task summary widget
+Personal Tasks — kanban 3 kolom, drag & drop antar kolom, queue system, glassmorphism
+Family Tasks — drag member ke task untuk assign, badge mafia per role, drop animation spring
+Daily Reset — cron job Vercel tengah malam, done dihapus, pending/in_progress masuk queue
+Spectate — lihat tugas anggota lain read-only
+Summary — activity log per hari
