@@ -1,0 +1,140 @@
+v6 – Peningkatan Visual & Pengalaman Pengguna (Micro‑interactions, Responsif, Tema Lanjutan)
+Tujuan: Meningkatkan kenyamanan dan kepuasan pengguna melalui interaksi yang halus, tampilan yang adaptif di semua perangkat, serta fleksibilitas tema yang lebih personal.
+
+2a. Micro‑interactions & Animasi
+Deskripsi:
+Menambahkan animasi halus dan umpan balik visual pada setiap aksi pengguna untuk memberikan kesan aplikasi yang hidup dan responsif.
+
+Implementasi:
+
+Drag‑and‑drop feedback:
+Menggunakan @dnd-kit yang sudah ada, tingkatkan dengan:
+
+Efek scale dan shadow saat kartu tugas diangkat (transform: scale(1.02), box-shadow lebih besar).
+
+Drop indicator berupa garis emas di antara tugas atau di area kolom yang valid.
+
+Animasi spring saat tugas mendarat di posisi baru (menggunakan framer-motion pada komponen kartu).
+
+Transisi halaman:
+Perluas penggunaan Framer Motion ke semua navigasi:
+
+Buat PageTransition wrapper yang membungkus konten halaman dengan efek fade dan slide.
+
+Terapkan juga pada modal dan popup (misalnya modal konfirmasi hapus tugas) dengan animasi scale dan backdrop blur.
+
+Hover states:
+
+Tombol dan kartu: tambahkan transisi warna border dan background dengan durasi 150ms.
+
+Ikon assignment (drag assignment) di halaman Family: muncul tooltip dengan animasi fade saat hover.
+
+Loading skeleton:
+Ganti spinner polos dengan skeleton yang menyerupai layout konten:
+
+Gunakan komponen Skeleton berbasis CSS (animasi pulse).
+
+Tampilkan saat pertama kali memuat data tugas, daftar anggota, atau ayat harian.
+
+Notifikasi sukses:
+
+Setelah tugas ditambahkan/dihapus, tampilkan toast dengan animasi slide-in dari bawah, otomatis menghilang setelah 3 detik.
+
+Teknis:
+
+Buat komponen utility: AnimatedPresence, Toast, Skeleton.
+
+Gunakan TypeScript untuk props dan state. Manfaatkan useAnimation dari Framer Motion untuk kontrol animasi yang lebih presisi.
+
+Pastikan animasi tidak mengganggu pengguna dengan preferensi prefers-reduced-motion (deteksi via CSS media query dan/atau hook).
+
+2b. Responsif & Mobile First
+Deskripsi:
+Memastikan semua halaman dapat digunakan dengan nyaman di layar ponsel tanpa kehilangan fungsionalitas.
+
+Implementasi:
+
+Kanban (halaman Personal):
+Pada lebar < 768px, ubah tampilan 3 kolom menjadi:
+
+Tab horizontal (Pending, In Progress, Done) dengan swipe gesture (gunakan react-swipeable atau custom hooks).
+
+Atau daftar vertikal dengan badge status dan tombol pindah status.
+
+Tetap mendukung drag‑and‑drop dengan modifikasi @dnd-kit (gunakan useSensors dengan PointerSensor dan TouchSensor).
+
+Halaman Family:
+
+Tampilkan tugas dalam bentuk card stack pada mobile, bukan tabel. Setiap card memiliki status, assignee, dan tombol aksi.
+
+Drag assignment tetap bisa menggunakan long press atau ikon khusus.
+
+Jam Analog & Digital (Home):
+
+Pada mobile, tata secara vertikal: jam analog di atas, jam digital di bawah.
+
+Gunakan CSS Grid dengan grid-template-columns: 1fr dan media query untuk mengubah urutan.
+
+Daily Verse (Summary):
+
+Kurangi padding dan margin, pastikan teks tetap terbaca dengan font size yang responsif (clamp()).
+
+Navigasi:
+
+Buat bottom navigation bar untuk mobile yang menyembunyikan sidebar. Gunakan useMediaQuery hook untuk menentukan tampilan.
+
+Teknis:
+
+Tambahkan viewport meta tag di layout root.
+
+Gunakan Tailwind CSS dengan pendekatan mobile-first (class sm:, md:, dll.) meskipun mayoritas styling inline, kita bisa menambahkan utility classes untuk responsif.
+
+Buat custom hook useBreakpoint yang mendeteksi ukuran layar dan menyediakan nilai boolean (misal isMobile).
+
+Pastikan semua event pointer (drag, klik) bekerja baik di touch device dengan menambahkan touch-action: manipulation pada elemen interaktif.
+
+2c. Tema & Kustomisasi Lanjutan
+Deskripsi:
+Memberi kontrol lebih kepada pengguna untuk menyesuaikan tampilan aplikasi, termasuk opsi tema terang dan kustomisasi warna aksen.
+
+Implementasi:
+
+Tema Terang (Light Mode):
+Tambahkan tema baru di Theme Picker: Light. Warna dasar: latar belakang putih (#f9f7f5), card abu-abu muda, aksen emas tetap, teks gelap. Simpan preferensi di localStorage dan terapkan CSS variables.
+
+Kustomisasi Warna Aksen:
+
+Tambahkan color picker (input type="color") di pengaturan tema. User dapat memilih warna aksen (misalnya emas, perak, hijau). Warna ini akan menggantikan variabel --gold dan turunannya (border, button, icon).
+
+Simpan nilai hex di localStorage bersama tema utama. Jika user mengganti aksen, semua elemen yang menggunakan --gold akan berubah.
+
+Tema Stellar + Efek Bintang:
+
+Untuk tema Stellar, tambahkan efek bintang berkedip dengan canvas kecil atau CSS pseudo-elements dengan animasi opacity.
+
+Gunakan requestAnimationFrame untuk membuat gerakan bintang yang halus (opsional).
+
+Sistem Tema Modular:
+
+Refactor variabel CSS ke dalam file themes.css dengan class tema di <html>.
+
+Buat hook useTheme yang mengelola pengaturan dan menerapkan class serta variabel aksen.
+
+Pastikan semua inline styles yang ada (sebagian besar) sudah menggunakan CSS variables agar mudah diubah.
+
+Teknis:
+
+Buat tabel atau konfigurasi tema di TypeScript:
+
+ts
+type Theme = 'vintage' | 'minimal' | 'stellar' | 'light';
+interface ThemeConfig {
+  background: string;
+  card: string;
+  text: string;
+  accent: string;
+  // ... lainnya
+}
+Simpan data tema di localStorage dengan kunci theme_prefs.
+
+Untuk aksen custom, simpan warna hex dan override variabel --accent di runtime.
