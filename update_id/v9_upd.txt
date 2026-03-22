@@ -1,0 +1,103 @@
+Galeri Foto Keluarga & Wishlist Keluarga
+Tujuan: Menambah fitur sosial dan emosional yang memperkuat ikatan keluarga, melalui berbagi momen dan perencanaan bersama.
+
+9a. Galeri Foto Keluarga
+Deskripsi:
+Ruang khusus untuk mengunggah dan melihat foto-foto keluarga. Setiap anggota bisa menambah foto, memberi caption, dan like.
+
+Fitur:
+
+Upload foto:
+
+Drag-and-drop atau pilih file. Kompres gambar di client (gunakan browser-image-compression) sebelum upload ke Supabase Storage.
+
+Simpan metadata: judul, deskripsi, diunggah oleh, tanggal.
+
+Tampilan galeri:
+
+Grid responsif dengan thumbnail.
+
+Modal lightbox untuk melihat foto besar, slider antar foto.
+
+Interaksi:
+
+Like (heart) – simpan di tabel photo_likes.
+
+Komentar sederhana (opsional, bisa gunakan pola seperti komentar task).
+
+Privasi:
+
+Hanya anggota keluarga yang login dapat melihat galeri.
+
+RLS di bucket storage membatasi akses hanya untuk user terautentikasi.
+
+Struktur Database:
+
+sql
+CREATE TABLE family_photos (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  image_url TEXT NOT NULL,
+  caption TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE photo_likes (
+  photo_id UUID REFERENCES family_photos(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id),
+  PRIMARY KEY (photo_id, user_id)
+);
+Teknis:
+
+Buat komponen PhotoGallery dengan next/image untuk optimasi.
+
+Gunakan Supabase Storage dengan bucket family-photos, atur RLS agar hanya user terautentikasi yang bisa upload dan baca.
+
+Implementasi upload dengan progress bar.
+
+9b. Wishlist Keluarga
+Deskripsi:
+Daftar keinginan bersama yang dapat diusulkan oleh anggota, lalu diupvote/downvote. Berguna untuk merencanakan pembelian, liburan, atau hadiah.
+
+Fitur:
+
+Tambah wish:
+Form dengan nama item, deskripsi, perkiraan harga, link (opsional).
+
+Voting:
+Setiap anggota dapat memberikan upvote (max 1 per item). Tampilkan total upvote.
+
+Status:
+
+Pending (belum diputuskan), Approved (disetujui oleh papa/mama), Completed (sudah direalisasikan).
+
+Urutan:
+Urutkan berdasarkan jumlah upvote tertinggi.
+
+Komentar (opsional):
+Diskusi singkat di setiap wish.
+
+Struktur Database:
+
+sql
+CREATE TABLE family_wishlist (
+  id UUID PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2),
+  url TEXT,
+  status VARCHAR(20) DEFAULT 'pending', -- pending, approved, completed
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE wishlist_votes (
+  wish_id UUID REFERENCES family_wishlist(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id),
+  PRIMARY KEY (wish_id, user_id)
+);
+Teknis:
+
+Buat halaman /wishlist yang menampilkan daftar wish.
+
+Gunakan TypeScript untuk validasi form dan state.
+
+Integrasikan dengan role-based actions: hanya papa/mama yang bisa mengubah status.
