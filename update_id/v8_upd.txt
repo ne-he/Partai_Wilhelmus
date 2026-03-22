@@ -1,0 +1,99 @@
+v8 – Komentar pada Family Tasks & Notifikasi Real‑time
+Tujuan: Meningkatkan kolaborasi dengan fitur diskusi pada setiap tugas keluarga, serta memberikan notifikasi instan agar semua anggota keluarga selalu terinformasi.
+
+3a. Komentar pada Family Tasks
+Deskripsi:
+Setiap family task memiliki thread komentar tempat anggota dapat berdiskusi, bertanya, atau memberi catatan. Komentar muncul secara real-time.
+
+Fitur:
+
+Tampilan komentar:
+Di halaman Family, saat task diklik akan terbuka modal/side panel yang menampilkan daftar komentar, avatar pengguna, timestamp, dan teks komentar.
+
+Menambahkan komentar:
+Input teks dengan dukungan emoji (gunakan library seperti emoji-picker-react). Tombol kirim.
+
+Edit/hapus komentar:
+Hanya pengguna yang membuat komentar atau user dengan role papa/mama yang dapat mengedit/menghapus.
+
+Real-time update:
+Gunakan Supabase Realtime dengan subscription ke tabel task_comments. Saat komentar baru masuk, tampilkan notifikasi toast di pojok layar.
+
+Struktur Database:
+
+sql
+CREATE TABLE task_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID REFERENCES family_tasks(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+-- RLS: user dapat melihat komentar pada task yang visible untuknya (berdasarkan role)
+Teknis:
+
+Buat komponen CommentSection dengan TypeScript.
+
+Gunakan useRealtime hook untuk subscribe ke perubahan.
+
+Optimasi: load komentar awal dengan pagination (10 komentar per load).
+
+3b. Notifikasi Real‑time & Push
+Deskripsi:
+Memberikan notifikasi dalam aplikasi (toast) dan notifikasi push browser untuk berbagai kejadian penting.
+
+Jenis Notifikasi:
+
+In-app (toast):
+
+Task baru ditambahkan ke keluarga.
+
+User di-assign ke suatu task.
+
+Komentar baru pada task yang diikuti.
+
+Deadline task mendekati (H-1).
+
+Push Notification (web):
+
+Sama seperti in-app, tetapi dikirim meskipun aplikasi tidak terbuka.
+
+Menggunakan service worker dan VAPID keys.
+
+Implementasi:
+
+Permission & Subscription:
+
+Di halaman Settings, beri tombol “Aktifkan Notifikasi” yang memanggil Notification.requestPermission().
+
+Jika diizinkan, kirim subscription endpoint ke Supabase (tabel push_subscriptions).
+
+Backend pengirim:
+
+Gunakan Supabase Edge Function yang dipicu oleh database trigger (insert ke family_tasks, task_comments, dll) untuk mengirim notifikasi.
+
+Untuk notifikasi push, gunakan library web-push di Edge Function.
+
+Real-time subscription:
+
+Untuk in-app notifikasi, cukup dengan Supabase Realtime. Setiap user subscribe ke channel family dan user:{id}.
+
+Struktur Database:
+
+sql
+CREATE TABLE push_subscriptions (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  endpoint TEXT UNIQUE NOT NULL,
+  keys JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+Teknis:
+
+Buat hook useNotifications yang mengelola subscription dan menampilkan toast.
+
+Gunakan react-hot-toast atau komponen toast custom yang sudah ada di v6.
+
+Pastikan notifikasi push hanya dikirim untuk event yang relevan dengan user (berdasarkan role dan assignment).
+
