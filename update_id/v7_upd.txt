@@ -1,0 +1,75 @@
+ v7 – Integrasi Google Calendar (Bidirectional Sync)
+Tujuan: Menyinkronkan tugas keluarga dan pribadi dengan Google Calendar, serta menampilkan kalender terpadu untuk memudahkan koordinasi jadwal keluarga.
+
+1. Arsitektur OAuth & Token Management
+Provider Google di Supabase Auth:
+Aktifkan provider Google di dashboard Supabase. Saat user menghubungkan akun, kita akan menyimpan provider_token, refresh_token, dan expires_at di tabel user_tokens (terpisah dari users untuk keamanan).
+
+Enkripsi Token:
+Gunakan enkripsi tingkat kolom di Supabase atau simpan token di Vault (jika menggunakan Supabase). Atau gunakan @supabase/ssr dengan cookies untuk menyimpan token sisi server.
+
+Flow Koneksi:
+
+Tambahkan tombol “Hubungkan Google Calendar” di halaman Settings (halaman baru).
+
+Setelah otorisasi, redirect balik ke aplikasi dan simpan token.
+
+Tampilkan status “Tersambung” dan tombol “Putuskan”.
+
+2. Sinkronisasi Dua Arah
+a. Dari Aplikasi ke Google Calendar (Export)
+Setiap tugas (personal dan keluarga) yang memiliki due_date dan due_time akan dibuatkan event di kalender user yang ditugaskan (untuk personal) atau kalender semua anggota keluarga (untuk family task).
+
+Trigger: Saat tugas dibuat/diperbarui (deadline, status), panggil Edge Function yang akan membuat/memperbarui event di Google Calendar.
+
+Event Detail: Judul event = nama tugas, deskripsi = catatan tambahan (jika ada), lokasi opsional. Gunakan warna yang berbeda untuk setiap anggota.
+
+b. Dari Google Calendar ke Aplikasi (Import)
+Cron job (setiap jam) atau webhook (jika menggunakan Google Calendar push notifications) untuk membaca event dari kalender user yang terhubung.
+
+Filter event yang memiliki label tertentu (misal “Partai Wilhelmus”) atau event dalam rentang waktu 2 minggu ke depan.
+
+Tampilkan event tersebut di halaman Family sebagai external events yang tidak dapat diedit, tetapi bisa dijadikan referensi.
+
+c. Tampilan Kalender Terpadu
+Buat halaman baru /calendar yang menampilkan:
+
+Tugas keluarga (dari tabel family_tasks) yang memiliki deadline.
+
+Event dari Google Calendar (dari sinkronisasi).
+
+Tugas pribadi (opsional, bisa ditampilkan jika user memilih).
+
+Gunakan library @fullcalendar/react (atau yang ringan) untuk menampilkan kalender bulanan/mingguan.
+
+Event dapat diklik untuk menampilkan detail dan (jika tugas) opsi edit.
+
+3. Teknis Implementasi
+Edge Functions:
+Buat dua fungsi Supabase:
+
+sync-to-google: dipanggil saat ada perubahan pada tasks (via database trigger atau setelah insert/update).
+
+sync-from-google: dipanggil oleh cron setiap 30 menit untuk memperbarui event.
+
+TypeScript Types:
+Definisikan tipe untuk token, event, dan payload:
+
+ts
+interface GoogleTokens {
+  access_token: string;
+  refresh_token: string;
+  expiry_date: number;
+}
+interface GoogleCalendarEvent {
+  id: string;
+  summary: string;
+  start: { dateTime: string; timeZone: string };
+  end: { dateTime: string; timeZone: string };
+  // ...
+}
+Handling Error & Rate Limit:
+Tangani token expired dengan refresh otomatis. Gunakan exponential backoff jika rate limit tercapai.
+
+Keamanan:
+Pastikan hanya user yang memiliki token yang bisa melakukan sinkronisasi. RLS di tabel tasks tetap berlaku.
