@@ -1,0 +1,241 @@
+v10 – Integrasi Chatbot AI Keluarga (Family Assistant)
+Tujuan: Menambahkan asisten cerdas yang dapat diakses dari halaman Home, khusus dilatih untuk membantu keluarga dalam berbagai hal—mulai dari manajemen tugas, rekomendasi aktivitas, hingga menjawab pertanyaan seputar data keluarga (dengan izin). Chatbot ini akan terintegrasi langsung ke dalam ekosistem Next.js, bukan sebagai aplikasi Streamlit terpisah, sehingga pengalaman pengguna tetap seamless.
+
+1. Mengapa Chatbot AI untuk Keluarga?
+Pusat informasi cepat: Anggota keluarga bisa bertanya “Apa tugas Abah hari ini?” atau “Kapan jadwal rapat keluarga?” tanpa harus membuka banyak halaman.
+
+Pengingat proaktif: Bot dapat memberikan saran berdasarkan konteks (misalnya “Jangan lupa beli susu, stok hampir habis” jika terintegrasi dengan wishlist atau tugas).
+
+Asisten produktivitas: Membantu menambahkan tugas via perintah suara atau teks, misalnya “Tambah tugas: beli beras, deadline besok”.
+
+Pembelajaran keluarga: Bot bisa dilatih dengan data keluarga (dengan kontrol privasi ketat) untuk memberikan rekomendasi aktivitas bersama, resep masakan favorit, atau pengingat ulang tahun.
+
+Mengurangi friction: Alih-alih navigasi manual, cukup tanya dan bot akan memandu atau langsung melakukan aksi melalui API internal.
+
+2. Arsitektur & Teknologi
+Komponen yang digunakan:
+
+Backend AI: LangChain + model LLM (misal OpenAI GPT-4 atau model open-source seperti Llama 2 yang di‑host sendiri). Karena aplikasi keluarga, lebih baik menggunakan model yang aman dan dapat dikontrol.
+
+API Gateway: Next.js API Routes (atau Edge Functions) sebagai proxy antara frontend dan AI service. Ini memungkinkan kita menambahkan logika bisnis, autentikasi, dan sanitasi input/output.
+
+Vector Database: Untuk menyimpan data keluarga yang relevan (tugas, preferensi, dokumen) agar chatbot dapat melakukan retrieval augmented generation (RAG) tanpa harus menyertakan semua data dalam prompt. Pilihan: Supabase pgvector (karena sudah pakai Supabase) atau Pinecone.
+
+Frontend: Komponen chat UI di halaman Home (sebelah kanan jam analog, misalnya) atau dalam modal yang bisa dibuka/tutup. Gunakan React state, WebSocket untuk streaming respons.
+
+Mengapa tidak Streamlit?
+Streamlit adalah framework Python yang sangat baik untuk prototyping, tetapi untuk integrasi dalam Next.js yang sudah ada, lebih baik membangun API sendiri dan menggunakan UI React. Dengan cara ini, kita tetap bisa menggunakan kode LangChain yang sudah dibuat (dengan membungkusnya dalam server Python atau mengonversinya ke TypeScript dengan library seperti langchain.js). Pendekatan yang disarankan:
+
+Pilihan A (Paling mudah): Deploy chatbot sebagai service terpisah (misal menggunakan FastAPI + LangChain) di Vercel atau platform lain, lalu panggil dari Next.js API route. Ini mempertahankan kode Python yang sudah ada.
+
+Pilihan B (Lebih terintegrasi): Tulis ulang logika chatbot menggunakan langchain.js dan jalankan langsung di Edge Functions atau API Routes Next.js. Ini lebih efisien dan tidak perlu service tambahan.
+
+Karena Anda menyebutkan proyek chatbot sudah dibuat dengan LangChain di VS Code dan deploy Streamlit, opsi A lebih realistis untuk v10. Namun, kita akan merancang agar ke depannya bisa bermigrasi ke opsi B jika diperlukan.
+
+3. Fitur Utama Chatbot Keluarga
+a. Konteks Keluarga
+Bot mengetahui siapa yang sedang bicara (berdasarkan user login) dan memiliki akses ke data keluarga sesuai role.
+
+Dapat menjawab:
+
+“Tampilkan tugas saya hari ini”
+
+“Tugas keluarga yang belum selesai”
+
+“Kapan terakhir kita makan malam bersama?” (jika ada data aktivitas)
+
+“Buatkan jadwal olahraga mingguan untuk keluarga”
+
+b. Manajemen Tugas via Chat
+Menambahkan tugas: “Tolong tambahkan tugas: beli tiket bioskop untuk Minggu depan, deadline Sabtu.”
+
+Bot akan memparsing info dan memanggil API internal untuk membuat task.
+
+Mengubah status: “Tandai tugas ‘beli susu’ sebagai selesai.”
+
+Menanyakan progres: “Berapa banyak tugas yang sudah selesai hari ini?”
+
+c. Integrasi dengan Fitur Lain
+Wishlist: “Tambahkan wishlist: vacuum robot, harga 2 juta.”
+
+Galeri foto: “Tampilkan foto terbaru dari liburan.”
+
+Daily Verse: “Ayat hari ini apa?” (mengambil dari cache daily verse)
+
+Pomodoro: “Mulai sesi fokus 25 menit.” (bot bisa memicu timer)
+
+d. Pengingat Proaktif (Opsional)
+Bot dapat mengirim notifikasi ke dalam chat (atau push notification) pada waktu tertentu: “Jangan lupa rapat keluarga jam 7 malam.”
+
+Bisa dijadwalkan melalui cron job yang memicu bot untuk mengirim pesan ke pengguna tertentu.
+
+e. Personalisasi & Memori
+Bot mengingat preferensi (misal “Saya suka diingatkan 1 jam sebelum deadline”) dan gaya bicara.
+
+Menggunakan vector database untuk menyimpan percakapan dan data keluarga yang relevan (dengan batasan privasi).
+
+4. Langkah Implementasi (Expert Level)
+Tahap 1: Persiapan Backend AI
+Pilih model dan hosting
+
+Jika menggunakan OpenAI, siapkan API key dan simpan di environment variables Vercel.
+
+Jika ingin lebih privat, deploy model open-source (misal Llama 2) di Replicate, Hugging Face Inference Endpoints, atau menggunakan Ollama di server sendiri.
+
+Bungkus logika LangChain dalam API
+
+Buat proyek FastAPI sederhana yang menerima POST request dengan { message, userId } dan mengembalikan respons.
+
+Di dalamnya, gunakan LangChain untuk:
+
+Memuat data keluarga dari Supabase (tugas, wishlist, dll) menggunakan tool/retriever.
+
+Menentukan apakah perlu memanggil fungsi (function calling) untuk membuat tugas, dll.
+
+Deploy API ini di Vercel (mendukung Python) atau di platform seperti Railway/Render.
+
+Contoh struktur endpoint:
+
+python
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    # Ambil data user dan konteks dari Supabase
+    user_data = get_user_data(request.userId)
+    family_context = get_family_context(user_data.family_id)
+    
+    # Inisialisasi chain dengan tools
+    chain = initialize_agent(tools, llm, agent="openai-functions")
+    response = chain.run(input=request.message, context=family_context)
+    
+    return {"response": response}
+Buat tools untuk aksi
+
+Tools dapat berupa fungsi Python yang akan dipanggil model ketika diperlukan, misal:
+
+create_task(title, due_date, assigned_to)
+
+update_task_status(task_id, status)
+
+get_tasks(user_id, status_filter)
+
+Tools ini akan mengakses Supabase melalui API atau langsung menggunakan supabase-py.
+
+Tahap 2: Menghubungkan dengan Next.js
+Buat API Route proxy di Next.js
+
+/api/chat akan menerima pesan dari frontend, menambahkan userId dari session (Supabase Auth), lalu meneruskan ke backend AI.
+
+Ini juga berfungsi sebagai lapisan keamanan: API key AI tidak terekspos ke client.
+
+ts
+// app/api/chat/route.ts
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { NextResponse } from 'next/server';
+
+export async function POST(req: Request) {
+  const supabase = createRouteHandlerClient({ cookies });
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { message } = await req.json();
+  const response = await fetch(process.env.AI_SERVICE_URL + '/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: session.user.id, message })
+  });
+  const data = await response.json();
+  return NextResponse.json(data);
+}
+Buat komponen Chat UI di halaman Home
+
+Gunakan React state untuk menyimpan pesan, dan form input.
+
+Untuk streaming respons, bisa menggunakan Server-Sent Events atau WebSocket. Pendekatan sederhana: tampilkan indikator mengetik lalu tampilkan respons setelah selesai.
+
+Desain: di sisi kanan halaman Home (atau dalam modal yang dapat dibuka dengan ikon di pojok). Agar tidak mengganggu jam analog dan partikel, bisa ditempatkan di card terpisah dengan tinggi tetap dan scrollable.
+
+Contoh struktur:
+
+tsx
+// components/ChatBot.tsx
+'use client';
+import { useState } from 'react';
+import { useSession } from '@supabase/auth-helpers-react';
+
+export default function ChatBot() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const session = useSession();
+
+  const sendMessage = async () => {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message: input })
+    });
+    const data = await res.json();
+    setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+  };
+
+  return (
+    <div className="chat-container">
+      <div className="chat-messages">
+        {messages.map((msg, idx) => (
+          <div key={idx} className={msg.role}>{msg.content}</div>
+        ))}
+      </div>
+      <input value={input} onChange={(e) => setInput(e.target.value)} />
+      <button onClick={sendMessage}>Kirim</button>
+    </div>
+  );
+}
+Tahap 3: Menambahkan Konteks dan Keamanan
+Retrieval Augmented Generation (RAG):
+Agar chatbot bisa menjawab pertanyaan tentang data keluarga tanpa harus menyertakan semua data dalam prompt, gunakan vector database.
+
+Buat embedding dari setiap tugas, wishlist, foto caption, dll. Simpan di Supabase pgvector.
+
+Saat user bertanya, cari embedding yang paling relevan dan tambahkan sebagai konteks ke prompt.
+
+Kontrol akses:
+Pastikan tools yang dipanggil chatbot hanya dapat mengakses data yang sesuai dengan role user (misal anak tidak boleh menghapus tugas orang tua). Gunakan RLS di Supabase dan validasi di sisi tools.
+
+Penyimpanan riwayat chat:
+Simpan percakapan di tabel chat_history untuk keperluan personalisasi dan debugging. Tapi pastikan data sensitif tidak disimpan.
+
+Tahap 4: Pengembangan Fitur Lanjutan (Opsional untuk v10)
+Voice input: Gunakan Web Speech API untuk mengetik via suara.
+
+Pengingat proaktif: Buat cron job yang memanggil API chatbot untuk mengirim notifikasi ke pengguna tertentu berdasarkan kondisi (misal tugas mendekati deadline).
+
+Pelatihan ulang: Izinkan papa/mama menambahkan “pengetahuan” khusus keluarga ke dalam basis pengetahuan (misal “Rutinitas malam: doa bersama jam 8”).
+
+5. Manfaat & Nilai Tambah
+Efisiensi: Anggota keluarga tidak perlu lagi membuka banyak menu; cukup bertanya pada asisten.
+
+Keterlibatan: Chatbot yang personal dan memahami konteks keluarga membuat aplikasi terasa lebih hidup dan hangat.
+
+Pengembangan modular: Dengan memisahkan AI service, kita bisa bereksperimen dengan model berbeda tanpa mengganggu frontend.
+
+Skalabilitas: Jika keluarga bertambah atau fitur bertambah, chatbot dapat dilatih dengan data baru.
+
+6. Pertimbangan Implementasi
+Biaya: Jika menggunakan OpenAI, perhatikan penggunaan token. Keluarga kecil tidak akan menghabiskan banyak, tapi tetap perlu monitoring. Alternatif model open-source lebih murah.
+
+Latensi: Panggilan ke AI service bisa memakan waktu 1-3 detik. Gunakan indikator loading dan pertimbangkan streaming untuk pengalaman lebih baik.
+
+Keamanan data: Karena ini adalah data keluarga, pastikan tidak ada data yang bocor ke pihak ketiga. Hosting model sendiri atau gunakan API dengan kebijakan privasi ketat.
+
+Testing: Uji coba dengan skenario nyata keluarga untuk memastikan akurasi dan keamanan.
+
+7. Rencana Pengembangan (v10)
+Minggu 1: Setup AI service (FastAPI + LangChain) dengan model sederhana, deploy di Vercel atau Railway. Buat endpoint /chat yang mengembalikan respons statis untuk testing.
+
+Minggu 2: Integrasikan dengan Next.js API route dan buat komponen Chat UI di halaman Home. Pastikan autentikasi berjalan.
+
+Minggu 3: Tambahkan tools untuk membuat/memperbarui tugas, mengambil data tugas, dll. Uji coba dengan perintah nyata.
+
+Minggu 4: Implementasi RAG dengan vector database (pgvector). Latih dengan data keluarga yang ada.
+
+Minggu 5: Uji coba dengan anggota keluarga, iterasi berdasarkan feedback. Tambahkan fitur voice input dan pengingat proaktif jika memungkinkan.
+
+Dengan v10, “Partai Wilhelmus” tidak hanya menjadi aplikasi manajemen tugas, tetapi juga asisten cerdas yang mendampingi keluarga dalam keseharian. Integrasi ini akan memperkuat posisi aplikasi sebagai pusat kehidupan digital keluarga yang modern dan cerdas.
