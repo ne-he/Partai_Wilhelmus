@@ -27,12 +27,17 @@ export async function GET(request: NextRequest) {
   try {
     const startTime = Date.now();
 
+    // 6.1 - Log awal dengan timestamp
+    console.log(`[DailyReset] Starting at ${new Date().toISOString()}`);
+
     // Get all users
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, username');
 
     if (usersError) throw usersError;
+
+    console.log(`[DailyReset] Processing ${users?.length ?? 0} users`);
 
     const results = [];
     let successCount = 0;
@@ -50,11 +55,16 @@ export async function GET(request: NextRequest) {
 
         if (result.success) {
           successCount++;
+          // 6.2 - Log per user sukses
+          console.log(`[DailyReset] User ${user.username} (${user.id}): queued ${result.queued}, deleted done tasks`);
         } else {
           errorCount++;
+          // 6.2 - Log per user gagal
+          console.error(`[DailyReset] Error for user ${user.id}:`, result.error);
         }
       } catch (error) {
-        console.error(`Reset failed for user ${user.id}:`, error);
+        // 6.2 - Log per user exception
+        console.error(`[DailyReset] Error for user ${user.id}:`, error);
         results.push({
           userId: user.id,
           username: user.username,
@@ -66,6 +76,9 @@ export async function GET(request: NextRequest) {
     }
 
     const duration = Date.now() - startTime;
+
+    // 6.3 - Log ringkasan di akhir
+    console.log(`[DailyReset] Done. Success: ${successCount}, Error: ${errorCount}, Duration: ${duration}ms`);
 
     return NextResponse.json({
       success: true,
@@ -122,21 +135,38 @@ async function performUserReset(supabase: any, userId: string) {
     };
   }
 
-  // Step 3: Insert into task_queue
-  const now = new Date().toISOString();
-  const queueData = tasksToQueue.map((task: any, index: number) => ({
-    user_id: task.user_id,
-    title: task.title,
-    status: task.status,
-    original_created_at: task.created_at,
-    queued_at: now,
-    order: index,
-  }));
+  // 6.4 - Deduplication check: query entri yang sudah ada hari ini
+  const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
 
-  const { error: insertError } = await supabase.from('task_queue').insert(queueData);
+  const { data: existing } = await supabase
+    .from('task_queue')
+    .select('id, title')
+    .eq('user_id', userId)
+    .gte('queued_at', today + 'T00:00:00.000Z')
+    .lt('queued_at', today + 'T23:59:59.999Z');
 
-  if (insertError) {
-    return { success: false, error: insertError.message };
+  const existingTitles = new Set(existing?.map((t: any) => t.title) ?? []);
+
+  // 6.5 - Filter tasksToQueue untuk menghilangkan duplikat
+  const tasksToInsert = tasksToQueue.filter((t: any) => !existingTitles.has(t.title));
+
+  // Step 3: Insert into task_queue (hanya yang belum ada)
+  if (tasksToInsert.length > 0) {
+    const now = new Date().toISOString();
+    const queueData = tasksToInsert.map((task: any, index: number) => ({
+      user_id: task.user_id,
+      title: task.title,
+      status: task.status,
+      original_created_at: task.created_at,
+      queued_at: now,
+      order: index,
+    }));
+
+    const { error: insertError } = await supabase.from('task_queue').insert(queueData);
+
+    if (insertError) {
+      return { success: false, error: insertError.message };
+    }
   }
 
   // Step 4: Delete from personal_tasks
@@ -147,15 +177,17 @@ async function performUserReset(supabase: any, userId: string) {
     .in('status', ['pending', 'in_progress']);
 
   if (deleteTasksError) {
-    // Rollback: delete from queue
-    await supabase
-      .from('task_queue')
-      .delete()
-      .eq('user_id', userId)
-      .in(
-        'title',
-        tasksToQueue.map((t: any) => t.title)
-      );
+    // Rollback: delete newly inserted tasks from queue (only the ones we just inserted)
+    if (tasksToInsert.length > 0) {
+      await supabase
+        .from('task_queue')
+        .delete()
+        .eq('user_id', userId)
+        .in(
+          'title',
+          tasksToInsert.map((t: any) => t.title)
+        );
+    }
 
     return { success: false, error: deleteTasksError.message };
   }
@@ -163,7 +195,7 @@ async function performUserReset(supabase: any, userId: string) {
   return {
     success: true,
     deletedDone: true,
-    queued: tasksToQueue.length,
+    queued: tasksToInsert.length,
   };
 }
 

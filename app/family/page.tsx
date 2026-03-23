@@ -58,6 +58,17 @@ function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+const DISPLAY_NAME_MAP: Record<string, string> = {
+  papa: 'Abi',
+  mama: 'Umi',
+  nemi: 'Baginda',
+  venly: 'Mbah',
+};
+
+function getDisplayName(username: string): string {
+  return DISPLAY_NAME_MAP[username.toLowerCase()] ?? username;
+}
+
 export default function FamilyTasks() {
   const [tasks, setTasks] = useState<FamilyTask[]>([]);
   const [title, setTitle] = useState('');
@@ -144,7 +155,7 @@ export default function FamilyTasks() {
         .eq('id', targetTaskId);
       if (error) throw error;
       await fetchTasks();
-      showToast(`${draggedUser.username} ditugaskan ke "${targetTask.title}"`, 'success');
+      showToast(`${getDisplayName(draggedUser.username)} ditugaskan ke "${targetTask.title}"`, 'success');
     } catch (error) {
       console.error('Assignment update failed:', error);
       showToast('Gagal mengassign tugas. Coba lagi.', 'error');
@@ -211,7 +222,7 @@ export default function FamilyTasks() {
             <div style={{ height: '2px', width: '60px', background: 'linear-gradient(to right, var(--accent), transparent)', marginTop: '0.5rem' }} />
             {!isEditor && (
               <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                Hanya Papa dan Mama yang bisa mengelola tugas keluarga.
+                Hanya Abi dan Umi yang bisa mengelola tugas keluarga.
               </p>
             )}
           </motion.div>

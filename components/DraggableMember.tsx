@@ -17,6 +17,17 @@ function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+const DISPLAY_NAME_MAP: Record<string, string> = {
+  papa: 'Abi',
+  mama: 'Umi',
+  nemi: 'Baginda',
+  venly: 'Mbah',
+};
+
+function getDisplayName(username: string): string {
+  return DISPLAY_NAME_MAP[username.toLowerCase()] ?? username;
+}
+
 function getRoleConfig(role: string) {
   switch (role) {
     case 'papa':
@@ -107,7 +118,7 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
           lineHeight: 1.2,
           userSelect: 'none',
         } as React.CSSProperties}>
-          {user.username}
+          {getDisplayName(user.username)}
         </span>
         <span style={{
           fontSize: '0.5rem',

@@ -8,6 +8,7 @@ import { FiCopy, FiShare2, FiRefreshCw } from "react-icons/fi";
 import PageTransition from "../../components/PageTransition";
 import Skeleton from "../../components/Skeleton";
 import useBreakpoint from "../../Lib/hooks/useBreakpoint";
+import TranslateButton from "../../components/TranslateButton";
 
 export const dynamic = "force-dynamic";
 
@@ -144,6 +145,7 @@ export default function DailyVersePage() {
             onCopy={handleCopy}
             onShare={handleShare}
             onRefresh={handleRefresh}
+            onTranslateError={(msg) => showToast(msg)}
           />
         )}
 
@@ -178,7 +180,7 @@ export default function DailyVersePage() {
   );
 }
 
-function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh }) {
+function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onTranslateError }) {
   if (!verse) return null;
 
   return (
@@ -268,23 +270,6 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh }) {
           — {verse.reference}
         </div>
 
-        {/* Badge terjemahan */}
-        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <span style={{
-            display: "inline-block",
-            background: "rgba(212,175,55,0.15)",
-            border: "1px solid rgba(212,175,55,0.3)",
-            borderRadius: "20px",
-            padding: "3px 14px",
-            fontSize: "0.65rem",
-            color: "#D4AF37",
-            letterSpacing: "2px",
-            fontFamily: "monospace",
-          }}>
-            {verse.translationId}
-          </span>
-        </div>
-
         {/* Ornamen bawah */}
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
           <span style={{ color: "#D4AF37", fontSize: "0.75rem" }}>✦</span>
@@ -293,11 +278,10 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh }) {
         </div>
 
         {/* Action buttons */}
-        <div style={{ display: "flex", justifyContent: "center", gap: "0.75rem" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
           {[
             { icon: <FiCopy size={16} />, label: "Salin", onClick: onCopy },
             { icon: <FiShare2 size={16} />, label: "Bagikan", onClick: onShare },
-            { icon: <FiRefreshCw size={16} style={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} />, label: "Ayat Baru", onClick: onRefresh },
           ].map(({ icon, label, onClick }) => (
             <button key={label} onClick={onClick} title={label} style={{
               display: "flex", alignItems: "center", gap: "6px",
@@ -317,6 +301,28 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh }) {
               {icon} {label}
             </button>
           ))}
+          <TranslateButton
+            verseText={verse.text}
+            verseId={verse.reference}
+            onError={(msg) => onTranslateError(msg)}
+          />
+          <button onClick={onRefresh} title="Ayat Baru" style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            padding: "0.5rem 1rem",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(212,175,55,0.2)",
+            borderRadius: "20px",
+            color: "var(--text-muted)",
+            cursor: "pointer",
+            fontSize: "0.75rem",
+            letterSpacing: "1px",
+            transition: "all 0.2s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,175,55,0.15)"; e.currentTarget.style.color = "#D4AF37"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.5)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
+          >
+            <FiRefreshCw size={16} style={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} /> Ayat Baru
+          </button>
         </div>
       </div>
     </div>

@@ -30,10 +30,8 @@ export default function TaskQueue({ queuedTasks, onMoveToToday }: TaskQueueProps
   return (
     <div style={{
       marginTop: '2.5rem',
-      background: 'rgba(15,14,11,0.6)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      border: '1px solid rgba(201,165,59,0.12)',
+      background: 'var(--bg-card)',
+      border: '1px solid var(--border)',
       borderRadius: '14px',
       padding: '1.5rem',
       borderStyle: 'dashed',
@@ -113,8 +111,8 @@ export default function TaskQueue({ queuedTasks, onMoveToToday }: TaskQueueProps
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.05 }}
                 style={{
-                  background: 'rgba(22,20,16,0.7)',
-                  border: '1px dashed rgba(201,165,59,0.2)',
+                  background: 'var(--bg-card2)',
+                  border: '1px dashed var(--border)',
                   borderRadius: '10px',
                   padding: '1rem',
                   display: 'flex',
