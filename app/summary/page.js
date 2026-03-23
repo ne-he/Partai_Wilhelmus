@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../components/Sidebar";
 import { getDailyVerse, fetchRandomVerse } from "../../Lib/utils/bibleApi";
 import { FiCopy, FiShare2, FiRefreshCw } from "react-icons/fi";
+import PageTransition from "../../components/PageTransition";
+import Skeleton from "../../components/Skeleton";
+import useBreakpoint from "../../Lib/hooks/useBreakpoint";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +20,7 @@ export default function DailyVersePage() {
   const [profile, setProfile] = useState(null);
   const [toast, setToast] = useState("");
   const router = useRouter();
+  const { isMobile } = useBreakpoint();
 
   useEffect(() => { init(); }, []);
 
@@ -82,12 +86,22 @@ export default function DailyVersePage() {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   }).toUpperCase();
 
-  if (loading) return <LoadingScreen />;
-
-  return (
+  if (loading) return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-main)" }}>
       <Sidebar user={profile} />
-      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: isMobile ? "5rem" : undefined }}>
+        <div style={{ width: "100%", maxWidth: "720px" }}>
+          <Skeleton variant="verse-card" />
+        </div>
+      </main>
+    </div>
+  );
+
+  return (
+    <PageTransition>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-main)" }}>
+      <Sidebar user={profile} />
+      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: isMobile ? "5rem" : undefined }}>
 
         {/* Header */}
         <div style={{ width: "100%", maxWidth: "720px", marginBottom: "2.5rem" }}>
@@ -160,6 +174,7 @@ export default function DailyVersePage() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }
 
@@ -181,7 +196,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh }) {
         WebkitBackdropFilter: "blur(20px)",
         border: "1px solid rgba(212,175,55,0.2)",
         borderRadius: "20px",
-        padding: "3rem 3.5rem",
+        padding: "clamp(1rem, 5vw, 2rem)",
         boxShadow: "0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
         overflow: "hidden",
       }}>
@@ -219,7 +234,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh }) {
           <p style={{
             fontFamily: "'Playfair Display', Georgia, serif",
             fontStyle: "italic",
-            fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)",
+            fontSize: "clamp(1rem, 4vw, 1.5rem)",
             lineHeight: 1.9,
             color: "#f0e6d3",
             textAlign: "center",
@@ -308,23 +323,6 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh }) {
   );
 }
 
-function LoadingScreen() {
-  return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--bg-main)", gap: "1.5rem" }}>
-      {/* Spinner */}
-      <div style={{
-        width: "48px", height: "48px", borderRadius: "50%",
-        border: "2px solid rgba(212,175,55,0.15)",
-        borderTop: "2px solid #D4AF37",
-        animation: "spin 1s linear infinite",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <span style={{ fontSize: "1rem" }}>📖</span>
-      </div>
-      <div style={{ color: "#D4AF37", letterSpacing: "4px", fontSize: "0.75rem" }}>MEMUAT AYAT...</div>
-    </div>
-  );
-}
 
 function ErrorState({ message, onRetry }) {
   return (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import PageTransition from "@/components/PageTransition";
+import NavigationWrapper from "@/components/NavigationWrapper";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
         <PageTransition>
           {children}
         </PageTransition>
+        <NavigationWrapper />
       </body>
     </html>
   );

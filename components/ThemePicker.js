@@ -1,16 +1,17 @@
 'use client';
 
+// Req 12.1: Tambah opsi "Light" ke array THEMES
 const THEMES = [
   { name: 'Vintage', swatch: '#c8a96e' },
   { name: 'Minimal', swatch: '#ffffff' },
   { name: 'Stellar', swatch: '#7090e0' },
+  { name: 'Light', swatch: '#f9f7f5' },
 ];
 
-export default function ThemePicker({ theme, onThemeChange, userId }) {
+// ThemePicker menerima props `theme` dan `onThemeChange` dari parent (home/page.js).
+// Persistensi dikelola oleh useTheme hook di parent — tidak ada logika localStorage manual di sini.
+export default function ThemePicker({ theme, onThemeChange }) {
   function handleSelect(name) {
-    if (userId) {
-      localStorage.setItem(`home_theme_${userId}`, name);
-    }
     onThemeChange(name);
   }
 
@@ -76,6 +77,7 @@ export default function ThemePicker({ theme, onThemeChange, userId }) {
                 borderRadius: '50%',
                 background: swatch,
                 flexShrink: 0,
+                border: name === 'Light' ? '1px solid rgba(0,0,0,0.15)' : 'none',
               }} />
               {name}
             </button>

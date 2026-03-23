@@ -2,6 +2,7 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { motion, AnimatePresence } from 'framer-motion';
 import DraggableTask from './DraggableTask';
 
 interface PersonalTask {
@@ -85,6 +86,25 @@ export default function DroppableColumn({ status, tasks, title, onDelete }: Drop
       </div>
 
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+        <AnimatePresence>
+          {isOver && (
+            <motion.div
+              key="drop-indicator"
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 1 }}
+              exit={{ scaleX: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              style={{
+                height: '2px',
+                background: 'var(--accent)',
+                borderRadius: '2px',
+                marginBottom: '0.5rem',
+                transformOrigin: 'left',
+                boxShadow: '0 0 8px var(--accent)',
+              }}
+            />
+          )}
+        </AnimatePresence>
         <div style={{ minHeight: '180px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {tasks.length === 0 ? (
             <div style={{

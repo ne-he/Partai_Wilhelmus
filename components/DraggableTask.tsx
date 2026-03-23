@@ -1,7 +1,9 @@
 'use client';
 
+import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { motion } from 'framer-motion';
 
 interface PersonalTask {
   id: string;
@@ -31,7 +33,7 @@ const statusColor: Record<string, string> = {
   done: '#00ff9d',
 };
 
-export default function DraggableTask({ task, onDelete, isOverlay }: DraggableTaskProps) {
+function DraggableTask({ task, onDelete, isOverlay }: DraggableTaskProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: 'task', task, status: task.status },
@@ -44,34 +46,43 @@ export default function DraggableTask({ task, onDelete, isOverlay }: DraggableTa
 
   const color = statusColor[task.status] || '#c8a96e';
 
+  const isActive = isDragging || isOverlay;
+
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <div
+      <motion.div
+        layout
+        transition={{ duration: 0.2, type: 'spring' }}
         {...listeners}
         className="cyber-task-card"
         style={{
-          background: isDragging || isOverlay ? 'rgba(0,30,30,0.95)' : 'rgba(0,20,20,0.75)',
+          background: isActive ? 'rgba(0,30,30,0.95)' : 'rgba(0,20,20,0.75)',
           backdropFilter: 'blur(12px)',
-          border: isDragging || isOverlay
+          border: isActive
             ? `1px solid ${color}`
             : '1px solid rgba(0,255,157,0.12)',
           borderRadius: '8px',
           padding: '0.7rem 0.9rem',
           cursor: isDragging ? 'grabbing' : 'grab',
           opacity: isDragging ? 0.4 : 1,
-          boxShadow: isDragging || isOverlay
-            ? `0 8px 24px rgba(0,255,157,0.2)`
+          boxShadow: isActive
+            ? '0 12px 32px rgba(0,255,157,0.3), 0 4px 12px rgba(0,0,0,0.5)'
             : '0 2px 8px rgba(0,0,0,0.3)',
-          transform: isOverlay ? 'rotate(1.5deg) scale(1.03)' : undefined,
+          transform: isActive ? 'scale(1.02)' : undefined,
           display: 'flex',
           alignItems: 'center',
           gap: '0.7rem',
           userSelect: 'none',
-          transition: 'border-color 0.2s, box-shadow 0.2s',
+          transition: 'all 0.15s ease',
         }}
       >
         {/* Drag handle */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', opacity: 0.25, flexShrink: 0 }}>
+        <div
+          role="button"
+          aria-grabbed={isDragging}
+          aria-label="Drag handle"
+          style={{ display: 'flex', flexDirection: 'column', gap: '3px', opacity: 0.25, flexShrink: 0 }}
+        >
           {[0, 1, 2].map(i => (
             <div key={i} style={{ display: 'flex', gap: '3px' }}>
               <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#00ff9d' }} />
@@ -103,6 +114,7 @@ export default function DraggableTask({ task, onDelete, isOverlay }: DraggableTa
             onPointerDown={e => e.stopPropagation()}
             onClick={e => { e.stopPropagation(); onDelete(task.id); }}
             title="Hapus"
+            aria-label={`Hapus tugas: ${task.title}`}
             className="cyber-del-btn"
             style={{
               flexShrink: 0,
@@ -122,12 +134,13 @@ export default function DraggableTask({ task, onDelete, isOverlay }: DraggableTa
             [DEL]
           </button>
         )}
-      </div>
+      </motion.div>
 
       <style jsx>{`
         .cyber-task-card:hover {
-          border-color: rgba(0,255,157,0.35) !important;
-          box-shadow: 0 0 12px rgba(0,255,157,0.1) !important;
+          border-color: var(--accent) !important;
+          background: rgba(0,30,30,0.9) !important;
+          box-shadow: 0 0 16px rgba(0,255,157,0.15) !important;
         }
         .cyber-task-card:hover .cyber-del-btn {
           opacity: 1 !important;
@@ -141,3 +154,5 @@ export default function DraggableTask({ task, onDelete, isOverlay }: DraggableTa
     </div>
   );
 }
+
+export default React.memo(DraggableTask);

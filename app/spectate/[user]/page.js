@@ -3,6 +3,8 @@ import { use, useState, useEffect } from "react";
 import { supabase } from "../../../Lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../components/Sidebar";
+import PageTransition from "../../../components/PageTransition";
+import useBreakpoint from "../../../Lib/hooks/useBreakpoint";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,7 @@ export default function SpectatePage({ params }) {
   const [myProfile, setMyProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { isMobile } = useBreakpoint();
 
   useEffect(() => { init(); }, [username]);
 
@@ -52,9 +55,10 @@ export default function SpectatePage({ params }) {
   const done = tasks.filter(t => t.status === "done").length;
 
   return (
+    <PageTransition>
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-main)" }}>
       <Sidebar user={myProfile} />
-      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem" }}>
+      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", paddingBottom: isMobile ? "5rem" : undefined }}>
         <div style={{ marginBottom: "2.5rem" }}>
           <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", letterSpacing: "3px", marginBottom: "6px" }}>SPECTATE</div>
           <h1 style={{ fontSize: "2rem", color: "var(--text-main)", fontWeight: "normal", textTransform: "capitalize" }}>
@@ -112,6 +116,7 @@ export default function SpectatePage({ params }) {
         </div>
       </main>
     </div>
+    </PageTransition>
   );
 }
 
