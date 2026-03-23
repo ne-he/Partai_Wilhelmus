@@ -1,4 +1,4 @@
-Partai Wilhelmus — Overview Lengkap
+Partai Wilhelmus — Overview Lengkap (v6)
 Apa ini?
 Web app manajemen tugas keluarga "Partai Wilhelmus" — private family productivity app yang dipakai oleh 4 anggota keluarga. Bukan app publik, murni internal keluarga.
 
@@ -16,6 +16,64 @@ Framer Motion	Animasi page transitions	1 komponen
 Vercel	Hosting + Cron Jobs	deployment
 Bahasa dominan: JavaScript ~65%, TypeScript ~35%. File halaman utama (home, login, summary, spectate) pakai .js, sedangkan komponen baru (family page, DnD components, TaskQueue) pakai .tsx.
 
+Update v6 — Fitur Baru & Peningkatan
+Semua perubahan v6 bersifat additive (tidak mengubah database, auth, atau cron job).
+
+1. Animasi Drag-and-Drop yang Lebih Hidup
+Saat kartu tugas diangkat, kartu membesar sedikit (scale 1.02) dan bayangan lebih tebal — jelas mana yang sedang dipegang. Muncul garis emas tipis di antara kartu saat akan dilepas (drop indicator). Setelah dilepas, kartu melenting ke posisi baru dengan efek spring halus. Mendukung touch/sentuh di HP (TouchSensor aktif).
+
+2. Transisi Halaman Smooth
+Setiap perpindahan halaman kini ada animasi fade + slide ke atas (framer-motion). Tidak lagi "pop" tiba-tiba.
+
+3. Modal Konfirmasi Hapus Tugas
+Menggantikan popup browser bawaan yang jelek. Modal baru punya animasi scale + backdrop blur yang elegan.
+
+4. Tooltip "Drag to assign"
+Petunjuk kecil muncul saat hover ke ikon assign di halaman Family — membantu anggota keluarga memahami cara assign tugas.
+
+5. Loading Skeleton
+Saat data masih dimuat, muncul placeholder abu-abu berbentuk mirip konten asli (bukan cuma teks "LOADING..."). Ada 3 varian: task-card (halaman Personal), task-list (halaman Family), verse-card (halaman Summary).
+
+6. Toast Notifikasi
+Notifikasi kecil muncul dari bawah layar setelah aksi berhasil: tambah tugas, hapus tugas, assign tugas. Otomatis hilang setelah 3 detik. Bisa antri beberapa notifikasi sekaligus.
+
+7. Tampilan Mobile-First (Responsif)
+Perubahan terbesar v6:
+- Halaman Personal: 3 kolom kanban berubah jadi tab horizontal di HP, dengan tombol pindah status per kartu
+- Halaman Family: tabel berubah jadi card stack vertikal di HP (judul, status, assignee, tombol aksi)
+- Halaman Home: jam analog + digital ditumpuk vertikal di HP (CSS Grid 1fr)
+- Halaman Summary: ukuran font dan padding pakai clamp() agar proporsional di semua layar
+- Bottom Navigation Bar: navigasi bawah muncul di HP (< 768px) dengan 5 ikon — Home, Personal, Family, Summary, Profile. Sidebar tetap tampil di desktop.
+
+8. Tema Terang (Light Mode)
+Pilihan tema baru di Theme Picker. Warna: background #f9f7f5, card #ffffff, teks #1e1a15, aksen emas tetap. Preferensi disimpan di localStorage (key: theme_prefs).
+
+9. Kustomisasi Warna Aksen (AccentPicker)
+Komponen baru di halaman Home. Pakai color picker untuk ganti warna aksen sesuka hati. Semua elemen yang pakai aksen (border, tombol, garis, ikon) ikut berubah real-time. Tersimpan otomatis.
+
+10. Efek Bintang Tema Stellar
+Tema Stellar kini punya lapisan bintang berkedip di background (CSS @keyframes twinkle + radial-gradient). Lebih imersif dari sebelumnya.
+
+11. Sistem Tema Modular (Lib/theme.ts)
+Infrastruktur tema baru yang terstruktur. Fungsi applyTheme() mengelola semua CSS variables secara terpusat. Mudah ditambah tema baru di masa depan.
+
+12. Aksesibilitas Animasi (useReducedMotion)
+Kalau pengguna aktifkan "Reduce Motion" di pengaturan sistem, semua animasi kompleks otomatis dimatikan. Aplikasi tetap berfungsi normal tanpa efek gerak.
+
+Komponen & Hook Baru (v6)
+- components/Skeleton.tsx — loading placeholder
+- components/Toast.tsx — notifikasi sementara
+- components/Tooltip.tsx — tooltip dengan animasi fade
+- components/ConfirmModal.tsx — modal konfirmasi hapus
+- components/Navigation.tsx — bottom navigation bar mobile
+- components/AccentPicker.tsx — color picker warna aksen
+- components/NavigationWrapper.tsx — wrapper client untuk layout
+- Lib/theme.ts — sistem tema modular
+- Lib/hooks/useTheme.ts — hook manajemen tema + persistensi
+- Lib/hooks/useBreakpoint.ts — hook deteksi mobile/desktop
+- Lib/hooks/useToast.ts — hook manajemen antrian toast
+- Lib/hooks/useReducedMotion.ts — hook deteksi prefers-reduced-motion
+
 Fitur-Fitur Detail
 1. Autentikasi (/login)
 Pakai Supabase Auth dengan email + password. Setelah login berhasil, langsung redirect ke /home. Ada peta email ke nama panggilan yang hardcoded — 4 akun keluarga saja.
@@ -27,20 +85,25 @@ Jam Analog — SVG photorealistic dengan 3 jarum (jam, menit, detik), 60 tick ma
 Jam Digital — Toggle manual atau otomatis aktif kalau reduced motion. Format HH:MM:SS.
 Greeting Personal — Sapaan berdasarkan email + waktu hari. "Good Morning Abah", "Good Evening Emak", dll. Update otomatis tiap menit.
 Particle Canvas — Background interaktif dengan 80 partikel yang kabur kalau kursor mendekat (repulsi radius 120px). Fixed fullscreen, z-index 0.
-Theme Picker — 3 tema: Vintage (earth-tone coklat emas), Minimal (flat dark hitam putih), Stellar (space biru gelap). Disimpan per user di localStorage.
+Theme Picker — 4 tema: Vintage (earth-tone coklat emas), Minimal (flat dark hitam putih), Stellar (space biru gelap + efek bintang berkedip), Light (terang putih bersih). Disimpan di localStorage key theme_prefs.
+AccentPicker — Color picker untuk ganti warna aksen sesuka hati. Tersimpan otomatis di theme_prefs.
 Task Summary — Ringkasan tugas: total, selesai, sisa. Klik → navigasi ke /personal.
 3. Halaman Personal (/personal)
 Manajemen tugas pribadi dengan sistem kanban:
 
-3 kolom: Pending → In Progress → Done
-Drag-and-drop antar kolom (ganti status) dan dalam kolom (reorder). Pakai @dnd-kit dengan optimistic update + rollback kalau gagal.
+3 kolom: Pending → In Progress → Done (desktop). Di mobile: tampilan tab horizontal dengan tombol pindah status per kartu.
+Drag-and-drop antar kolom (ganti status) dan dalam kolom (reorder). Pakai @dnd-kit dengan optimistic update + rollback kalau gagal. Mendukung touch/sentuh (TouchSensor).
+Drag feedback visual: kartu membesar saat diangkat, drop indicator garis emas, animasi spring saat mendarat.
+Loading skeleton saat fetch data. Toast notifikasi saat tambah/hapus tugas. Modal konfirmasi sebelum hapus.
 Pomodoro Timer — Timer 25 menit kerja + 5 menit break. Auto-transition. Notifikasi suara saat selesai (Web Audio API). Persist ke localStorage jadi tetap jalan kalau pindah halaman. Simpan sesi ke tabel focus_sessions.
 Task Queue — Kolom kedua yang menampilkan tugas dari hari sebelumnya yang belum selesai. Bisa drag ke Today atau klik "Move to Today".
 4. Halaman Family (/family)
 Manajemen tugas keluarga bersama:
 
-Tampilkan semua family tasks dengan status
-Drag assignment — Papa/Mama bisa drag nama anggota ke task untuk assign. Otomatis ubah status ke in_progress. Child user tidak bisa drag assignment.
+Tampilkan semua family tasks dengan status. Di mobile: card stack vertikal (judul, status, assignee, tombol aksi).
+Drag assignment — Papa/Mama bisa drag nama anggota ke task untuk assign. Otomatis ubah status ke in_progress. Child user tidak bisa drag assignment. Mendukung touch (TouchSensor).
+Tooltip "Drag to assign" muncul saat hover ke ikon assign.
+Loading skeleton saat fetch data. Toast notifikasi saat assign berhasil.
 Role-based: papa/mama punya akses penuh, anak hanya bisa update status task sendiri.
 5. Halaman Daily Verse (/summary)
 Halaman renungan harian dengan ayat Alkitab:
@@ -48,8 +111,9 @@ Halaman renungan harian dengan ayat Alkitab:
 Fetch dari bible-api.com/?random=1 setiap hari baru
 Cache di localStorage (dailyVerse + dailyVerseDate) — ayat sama sepanjang hari
 Desain premium: glassmorphism card dengan ornamen ❦ di sudut, tanda kutip besar opacity rendah, ornamen ✦ ◆ ✦, font Playfair Display italic
+Font size dan padding pakai clamp() — proporsional di semua ukuran layar
+Loading skeleton saat fetch. Error state dengan "Coba Lagi".
 Tombol Copy (salin ke clipboard), Share (Web Share API), Refresh (ayat baru tanpa ganggu cache harian)
-Loading spinner gold, error state dengan "Coba Lagi"
 Footer motto: "Keluarga adalah Kekuatan, Iman adalah Senjata"
 6. Halaman Spectate (/spectate/[user])
 Lihat tugas anggota keluarga lain secara read-only. Dynamic route — /spectate/papa, /spectate/mama, dll.
@@ -81,3 +145,28 @@ family_tasks — tugas keluarga (title, status, assigned_to)
 task_queue — tugas yang di-queue dari daily reset
 focus_sessions — riwayat sesi Pomodoro
 Semua dilindungi RLS (Row Level Security) — user hanya bisa akses data miliknya sendiri
+
+---
+
+Update v6.1 — Bug Fixes & Polish
+
+1. Tema Light/Minimal Terbaca dengan Baik
+Sebelumnya komponen DraggableTask dan DroppableColumn pakai warna hardcoded gelap (rgba(0,20,20,0.75), #e0f2fe) yang tidak terbaca di tema terang. Sekarang semua warna diganti pakai CSS variables (var(--bg-card), var(--text-main), var(--border), var(--accent)) sehingga otomatis menyesuaikan tema apapun.
+
+2. Drop Indicator Selalu Muncul
+Indikator garis saat drag-and-drop kini muncul di atas daftar tugas, bukan di dalam SortableContext yang bisa tertutup. Sekarang terlihat jelas baik kolom kosong maupun kolom yang sudah berisi tugas.
+
+3. ConfirmModal Hapus Tugas di Personal
+Halaman Personal kini punya modal konfirmasi sebelum menghapus tugas — sama seperti halaman Family. Tidak lagi langsung hapus tanpa konfirmasi.
+
+4. Toast Notifikasi di Personal
+Setelah hapus tugas di halaman Personal, muncul toast notifikasi "Tugas dihapus" di pojok kanan bawah.
+
+5. Teks Loading Diganti
+Semua halaman (Home, Personal, Family, Summary, Spectate) kini menampilkan "Bentar..." saat loading — lebih personal dan sesuai gaya bahasa keluarga.
+
+6. Hapus Emoji 📖 dari Daily Verse
+Label "AYAT RENUNGAN HARIAN" di halaman Summary tidak lagi pakai emoji 📖 — lebih bersih dan konsisten dengan estetika tipografi halaman.
+
+7. Blur Dikurangi di Tema Terang
+Efek backdrop-filter: blur() pada kartu tugas dimatikan untuk tema Light dan Minimal via CSS class — menghindari tampilan buram/washed out di background terang.

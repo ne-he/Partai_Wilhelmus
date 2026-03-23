@@ -221,7 +221,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh }) {
 
         {/* Label */}
         <div style={{ fontSize: "0.65rem", color: "#D4AF37", letterSpacing: "3px", marginBottom: "2rem", textAlign: "center" }}>
-          📖 AYAT RENUNGAN HARIAN
+          AYAT RENUNGAN HARIAN
         </div>
 
         {/* Teks ayat dengan tanda kutip besar */}

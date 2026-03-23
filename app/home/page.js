@@ -364,7 +364,7 @@ function LoadingScreen() {
           fontSize: "0.8rem",
         }}
       >
-        LOADING...
+        Bentar...
       </div>
     </div>
   );
