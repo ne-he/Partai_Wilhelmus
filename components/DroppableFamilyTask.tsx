@@ -26,9 +26,9 @@ interface DroppableFamilyTaskProps {
 }
 
 const statusConfig = {
-  pending: { color: '#c8a96e', bg: 'rgba(200,169,110,0.08)', label: 'Pending', icon: '○' },
-  in_progress: { color: '#a07850', bg: 'rgba(160,120,80,0.08)', label: 'In Progress', icon: '◑' },
-  done: { color: '#7a9e6e', bg: 'rgba(122,158,110,0.08)', label: 'Done', icon: '●' },
+  pending: { color: '#c8a96e', label: 'Pending', icon: '○' },
+  in_progress: { color: '#64a0c8', label: 'In Progress', icon: '◑' },
+  done: { color: '#7a9e6e', label: 'Done', icon: '●' },
 };
 
 function getInitials(name: string) {
@@ -58,24 +58,24 @@ export default function DroppableFamilyTask({
       ref={setNodeRef}
       animate={{
         scale: isOver ? 1.015 : 1,
-        borderColor: isOver ? 'rgba(201,165,59,0.7)' : 'rgba(201,165,59,0.18)',
       }}
       transition={{ type: 'spring', stiffness: 400, damping: 28 }}
       style={{
-        background: isOver ? 'rgba(28,24,16,0.98)' : 'rgba(22,20,16,0.8)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        border: '1px solid rgba(201,165,59,0.18)',
+        background: isOver ? 'var(--bg-card2)' : 'var(--bg-card)',
+        border: isOver
+          ? '2px solid var(--accent)'
+          : '1px solid var(--border)',
         borderRadius: '8px',
         padding: '0.9rem 1.1rem',
         boxShadow: isOver
-          ? '0 0 0 1px rgba(201,165,59,0.4), 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(201,165,59,0.1)'
-          : '0 2px 8px rgba(0,0,0,0.2)',
+          ? '0 0 0 3px var(--accent), 0 8px 24px rgba(0,0,0,0.12)'
+          : '0 1px 4px rgba(0,0,0,0.06)',
         position: 'relative',
         overflow: 'hidden',
+        transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
       }}
     >
-      {/* Gold shimmer line saat isOver */}
+      {/* Accent shimmer line saat isOver */}
       <AnimatePresence>
         {isOver && (
           <motion.div
@@ -95,7 +95,7 @@ export default function DroppableFamilyTask({
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
         {/* Status icon */}
-        <span style={{ fontSize: '0.8rem', color: s.color, flexShrink: 0, opacity: 0.9 }}>{s.icon}</span>
+        <span style={{ fontSize: '0.8rem', color: s.color, flexShrink: 0 }}>{s.icon}</span>
 
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -112,7 +112,7 @@ export default function DroppableFamilyTask({
             {task.title}
           </p>
 
-          {/* Assigned user badge — animasi masuk */}
+          {/* Assigned user badge */}
           <AnimatePresence mode="wait">
             {assignedUser ? (
               <motion.div
@@ -126,14 +126,13 @@ export default function DroppableFamilyTask({
                   alignItems: 'center',
                   gap: '0.4rem',
                   padding: '2px 10px 2px 6px',
-                  background: 'rgba(201,165,59,0.08)',
-                  border: '1px solid rgba(201,165,59,0.2)',
+                  background: 'var(--bg-card2)',
+                  border: '1px solid var(--border)',
                   borderRadius: '3px',
                   fontSize: '0.7rem',
                   color: 'var(--accent)',
                 }}
               >
-                {/* Mini avatar */}
                 <div style={{
                   width: '16px', height: '16px', borderRadius: '2px',
                   background: getRoleConfig(assignedUser.role).color,
@@ -162,7 +161,6 @@ export default function DroppableFamilyTask({
                   color: isOver ? 'var(--accent)' : 'var(--text-muted)',
                   fontStyle: 'italic',
                   transition: 'color 0.2s',
-                  letterSpacing: '0.2px',
                 }}
               >
                 {isOver ? '✦ Lepaskan untuk assign' : 'Drag anggota ke sini'}
@@ -177,8 +175,8 @@ export default function DroppableFamilyTask({
             value={task.status}
             onChange={e => onStatusChange(task.id, e.target.value)}
             style={{
-              background: s.bg,
-              border: `1px solid ${s.color}40`,
+              background: 'var(--bg-card2)',
+              border: `1px solid ${s.color}60`,
               borderRadius: '4px',
               color: s.color,
               padding: '4px 8px',
@@ -187,7 +185,6 @@ export default function DroppableFamilyTask({
               outline: 'none',
               flexShrink: 0,
               fontFamily: 'Georgia, serif',
-              letterSpacing: '0.3px',
             }}
           >
             <option value="pending">Pending</option>
@@ -201,36 +198,32 @@ export default function DroppableFamilyTask({
           <button
             onClick={() => onDelete(task.id)}
             title="Hapus tugas"
+            className="family-del-btn"
             style={{
               flexShrink: 0,
               padding: '3px 9px',
               borderRadius: '3px',
-              border: '1px solid rgba(201,165,59,0.12)',
+              border: '1px solid var(--border)',
               background: 'transparent',
               color: 'var(--text-muted)',
               cursor: 'pointer',
               fontSize: '0.6rem',
               letterSpacing: '1px',
               transition: 'all 0.2s',
-              fontFamily: 'monospace',
-            }}
-            onMouseEnter={e => {
-              const btn = e.currentTarget;
-              btn.style.borderColor = 'rgba(180,60,60,0.5)';
-              btn.style.color = '#b44040';
-              btn.style.background = 'rgba(180,60,60,0.08)';
-            }}
-            onMouseLeave={e => {
-              const btn = e.currentTarget;
-              btn.style.borderColor = 'rgba(201,165,59,0.12)';
-              btn.style.color = 'var(--text-muted)';
-              btn.style.background = 'transparent';
             }}
           >
             [DEL]
           </button>
         )}
       </div>
+
+      <style jsx>{`
+        .family-del-btn:hover {
+          border-color: rgba(220,60,60,0.5) !important;
+          color: #dc3c3c !important;
+          background: rgba(220,60,60,0.08) !important;
+        }
+      `}</style>
     </motion.div>
   );
 }

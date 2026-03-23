@@ -17,15 +17,14 @@ function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
-// Mafia role config — warna dan simbol per role
 function getRoleConfig(role: string) {
   switch (role) {
     case 'papa':
-      return { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', symbol: '♦', label: 'BOSS' };
+      return { color: '#c8a96e', symbol: '♦', label: 'BOSS' };
     case 'mama':
-      return { color: '#b8956a', bg: 'rgba(184,149,106,0.12)', symbol: '♠', label: 'CONSIGLIERE' };
+      return { color: '#b8956a', symbol: '♠', label: 'CONSIGLIERE' };
     default:
-      return { color: '#9c8a72', bg: 'rgba(156,138,114,0.1)', symbol: '♣', label: 'SOLDATO' };
+      return { color: '#9c8a72', symbol: '♣', label: 'SOLDATO' };
   }
 }
 
@@ -48,35 +47,28 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
         alignItems: 'center',
         gap: '0.6rem',
         padding: '7px 16px 7px 10px',
-        background: isDragging
-          ? 'rgba(30,26,18,0.98)'
-          : 'rgba(22,20,14,0.9)',
+        background: isDragging ? 'var(--bg-card2)' : 'var(--bg-card)',
         border: isDragging
-          ? `1.5px solid ${cfg.color}`
-          : `1px solid rgba(201,165,59,0.25)`,
+          ? `2px solid var(--accent)`
+          : `1px solid var(--border)`,
+        borderTop: isDragging ? `2px solid ${cfg.color}` : `1px solid ${cfg.color}60`,
         borderRadius: '4px',
-        opacity: isDragging ? 0.6 : 1,
-        cursor: disabled ? 'not-allowed' : 'grab',
+        opacity: isDragging ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : isDragging ? 'grabbing' : 'grab',
         transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
         boxShadow: isDragging
-          ? `0 8px 24px rgba(0,0,0,0.5), 0 0 12px ${cfg.color}30`
-          : '0 2px 8px rgba(0,0,0,0.3)',
+          ? `0 8px 24px rgba(0,0,0,0.2), 0 0 0 3px var(--accent)`
+          : '0 1px 4px rgba(0,0,0,0.06)',
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-        draggable: false,
-        // Subtle top border accent
-        borderTop: isDragging ? `1.5px solid ${cfg.color}` : `1px solid ${cfg.color}60`,
       } as React.CSSProperties}
     >
-      {/* Avatar — monogram dengan latar gelap */}
+      {/* Avatar */}
       <div style={{
         width: '30px',
         height: '30px',
         borderRadius: '3px',
-        background: `linear-gradient(135deg, rgba(30,26,18,0.95), rgba(20,18,12,0.95))`,
+        background: 'var(--bg-card2)',
         border: `1px solid ${cfg.color}50`,
         display: 'flex',
         alignItems: 'center',
@@ -86,11 +78,9 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Subtle corner decoration */}
         <div style={{
           position: 'absolute', top: '2px', right: '2px',
-          fontSize: '0.45rem', color: cfg.color, opacity: 0.6,
-          lineHeight: 1,
+          fontSize: '0.45rem', color: cfg.color, opacity: 0.6, lineHeight: 1,
         }}>
           {cfg.symbol}
         </div>
@@ -116,7 +106,6 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
           letterSpacing: '0.3px',
           lineHeight: 1.2,
           userSelect: 'none',
-          WebkitUserSelect: 'none',
         } as React.CSSProperties}>
           {user.username}
         </span>

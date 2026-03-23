@@ -135,7 +135,7 @@ function StatBadge({ label, value, accent }) {
 function LoadingScreen() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-main)" }}>
-      <div style={{ color: "var(--accent)", letterSpacing: "4px", fontSize: "0.8rem" }}>Bentar...</div>
+      <div style={{ color: "var(--accent)", letterSpacing: "6px", fontSize: "1.8rem", fontFamily: "'Playfair Display', Georgia, serif" }}>Bentar...</div>
     </div>
   );
 }

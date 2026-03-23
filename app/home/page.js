@@ -360,8 +360,9 @@ function LoadingScreen() {
       <div
         style={{
           color: "var(--accent)",
-          letterSpacing: "4px",
-          fontSize: "0.8rem",
+          letterSpacing: "6px",
+          fontSize: "1.8rem",
+          fontFamily: "'Playfair Display', Georgia, serif",
         }}
       >
         Bentar...

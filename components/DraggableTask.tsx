@@ -49,18 +49,17 @@ function DraggableTask({ task, onDelete, isOverlay }: DraggableTaskProps) {
         className="cyber-task-card"
         style={{
           background: isActive ? 'var(--bg-card2)' : 'var(--bg-card)',
-          backdropFilter: 'blur(8px)',
           border: isActive
-            ? '1px solid var(--accent)'
+            ? '2px solid var(--accent)'
             : '1px solid var(--border)',
           borderRadius: '8px',
           padding: '0.7rem 0.9rem',
           cursor: isDragging ? 'grabbing' : 'grab',
-          opacity: isDragging ? 0.4 : 1,
+          opacity: isDragging ? 0.35 : 1,
           boxShadow: isActive
-            ? '0 12px 32px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.15)'
-            : '0 2px 8px rgba(0,0,0,0.08)',
-          transform: isActive ? 'scale(1.02)' : undefined,
+            ? '0 12px 32px rgba(0,0,0,0.18), 0 0 0 3px var(--accent), 0 4px 12px rgba(0,0,0,0.12)'
+            : '0 1px 4px rgba(0,0,0,0.06)',
+          transform: isActive ? 'scale(1.03)' : undefined,
           display: 'flex',
           alignItems: 'center',
           gap: '0.7rem',
@@ -69,9 +68,7 @@ function DraggableTask({ task, onDelete, isOverlay }: DraggableTaskProps) {
         }}
       >
         {/* Drag handle */}
-        <div
-          style={{ display: 'flex', flexDirection: 'column', gap: '3px', opacity: 0.25, flexShrink: 0 }}
-        >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', opacity: 0.3, flexShrink: 0 }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{ display: 'flex', gap: '3px' }}>
               <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'var(--text-muted)' }} />
@@ -111,7 +108,7 @@ function DraggableTask({ task, onDelete, isOverlay }: DraggableTaskProps) {
               borderRadius: '4px',
               border: '1px solid rgba(220,60,60,0.25)',
               background: 'transparent',
-              color: 'rgba(220,60,60,0.45)',
+              color: 'rgba(220,60,60,0.5)',
               cursor: 'pointer',
               fontSize: '0.6rem',
               letterSpacing: '1px',
@@ -128,6 +125,7 @@ function DraggableTask({ task, onDelete, isOverlay }: DraggableTaskProps) {
         .cyber-task-card:hover {
           border-color: var(--accent) !important;
           background: var(--bg-card2) !important;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.1) !important;
         }
         .cyber-task-card:hover .cyber-del-btn {
           opacity: 1 !important;

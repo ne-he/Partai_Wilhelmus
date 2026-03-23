@@ -163,7 +163,6 @@ export default function FamilyTasks() {
       </div>
     );
   }
-
   const isEditor = profile?.role === 'papa' || profile?.role === 'mama';
   const activeUser = users.find(u => u.id === activeId);
 
@@ -231,9 +230,8 @@ export default function FamilyTasks() {
               { label: 'SELESAI', value: doneTasks.length, icon: '●', accent: true },
             ].map(s => (
               <div key={s.label} style={{
-                background: 'rgba(22,20,16,0.85)',
-                backdropFilter: 'blur(12px)',
-                border: s.accent ? '1px solid rgba(201,165,59,0.35)' : '1px solid rgba(201,165,59,0.15)',
+                background: 'var(--bg-card)',
+                border: s.accent ? '1px solid var(--accent)' : '1px solid var(--border)',
                 borderRadius: '12px',
                 padding: '0.85rem 1.25rem',
                 minWidth: '100px',
@@ -268,9 +266,8 @@ export default function FamilyTasks() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.15 }}
               style={{
-                background: 'rgba(22,20,16,0.8)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(201,165,59,0.15)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border)',
                 borderRadius: '14px',
                 padding: '1.5rem',
                 marginBottom: '2rem',
@@ -318,8 +315,8 @@ export default function FamilyTasks() {
                       onClick={() => addTask(undefined, t)}
                       style={{
                         padding: '5px 14px',
-                        background: 'rgba(15,14,11,0.7)',
-                        border: '1px solid rgba(201,165,59,0.2)',
+                        background: 'var(--bg-card2)',
+                        border: '1px solid var(--border)',
                         borderRadius: '20px',
                         color: 'var(--text-muted)',
                         fontSize: '0.78rem',
@@ -327,11 +324,11 @@ export default function FamilyTasks() {
                         transition: 'all 0.2s',
                       }}
                       onMouseEnter={e => {
-                        e.currentTarget.style.borderColor = 'rgba(201,165,59,0.5)';
+                        e.currentTarget.style.borderColor = 'var(--accent)';
                         e.currentTarget.style.color = 'var(--text-main)';
                       }}
                       onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = 'rgba(201,165,59,0.2)';
+                        e.currentTarget.style.borderColor = 'var(--border)';
                         e.currentTarget.style.color = 'var(--text-muted)';
                       }}
                     >
@@ -344,8 +341,8 @@ export default function FamilyTasks() {
                 <form onSubmit={addTask} style={{ maxWidth: '560px' }}>
                   <div style={{
                     display: 'flex',
-                    background: 'rgba(15,14,11,0.7)',
-                    border: inputFocused ? '1px solid rgba(201,165,59,0.6)' : '1px solid rgba(201,165,59,0.2)',
+                    background: 'var(--bg-card2)',
+                    border: inputFocused ? '1px solid var(--accent)' : '1px solid var(--border)',
                     borderRadius: '10px',
                     overflow: 'hidden',
                     transition: 'border-color 0.2s',
@@ -367,7 +364,7 @@ export default function FamilyTasks() {
                       disabled={!title.trim()}
                       style={{
                         padding: '0.8rem 1.25rem',
-                        background: title.trim() ? 'var(--accent)' : 'rgba(201,165,59,0.15)',
+                        background: title.trim() ? 'var(--accent)' : 'var(--bg-card)',
                         border: 'none',
                         color: title.trim() ? '#1a1612' : 'var(--text-muted)',
                         fontWeight: '700', cursor: title.trim() ? 'pointer' : 'default',
@@ -417,9 +414,8 @@ export default function FamilyTasks() {
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ delay: i * 0.03 }}
                         style={{
-                          background: 'rgba(22,20,16,0.9)',
-                          backdropFilter: 'blur(12px)',
-                          border: '1px solid rgba(201,165,59,0.18)',
+                          background: 'var(--bg-card)',
+                          border: '1px solid var(--border)',
                           borderRadius: '10px',
                           padding: '1rem',
                           display: 'flex',
