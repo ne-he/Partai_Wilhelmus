@@ -157,7 +157,7 @@ async function performUserReset(supabase: any, userId: string) {
       user_id: task.user_id,
       title: task.title,
       status: task.status,
-      original_created_at: task.created_at,
+      original_created_at: task.created_at ?? now, // fallback jika created_at null
       queued_at: now,
       order: index,
     }));
