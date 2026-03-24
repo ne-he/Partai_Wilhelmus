@@ -31,11 +31,11 @@ function getDisplayName(username: string): string {
 function getRoleConfig(role: string) {
   switch (role) {
     case 'papa':
-      return { color: '#c8a96e', symbol: '♦', label: 'BOSS' };
+      return { color: '#c8a96e', symbol: '♦' };
     case 'mama':
-      return { color: '#b8956a', symbol: '♠', label: 'CONSIGLIERE' };
+      return { color: '#b8956a', symbol: '♠' };
     default:
-      return { color: '#9c8a72', symbol: '♣', label: 'SOLDATO' };
+      return { color: '#9c8a72', symbol: '♣' };
   }
 }
 
@@ -109,6 +109,7 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
 
       {/* Name + role */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', pointerEvents: 'none' }}>
+        {/* Nama asli tetap tampil besar */}
         <span style={{
           fontFamily: "'Playfair Display', Georgia, serif",
           fontSize: '0.82rem',
@@ -117,9 +118,11 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
           letterSpacing: '0.3px',
           lineHeight: 1.2,
           userSelect: 'none',
+          textTransform: 'capitalize',
         } as React.CSSProperties}>
-          {getDisplayName(user.username)}
+          {user.username}
         </span>
+        {/* Teks kecil: Abi / Umi / Baginda / Mbah */}
         <span style={{
           fontSize: '0.5rem',
           color: cfg.color,
@@ -128,7 +131,7 @@ export default function DraggableMember({ user, disabled = false }: DraggableMem
           opacity: 0.8,
           userSelect: 'none',
         } as React.CSSProperties}>
-          {cfg.label}
+          {getDisplayName(user.username)}
         </span>
       </div>
     </div>

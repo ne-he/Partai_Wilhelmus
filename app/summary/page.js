@@ -4,11 +4,11 @@ import { supabase } from "../../Lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../components/Sidebar";
 import { getDailyVerse, fetchRandomVerse } from "../../Lib/utils/bibleApi";
-import { FiCopy, FiShare2, FiRefreshCw } from "react-icons/fi";
+import { FiCopy, FiShare2, FiRefreshCw, FiGlobe } from "react-icons/fi";
 import PageTransition from "../../components/PageTransition";
 import Skeleton from "../../components/Skeleton";
 import useBreakpoint from "../../Lib/hooks/useBreakpoint";
-import TranslateButton from "../../components/TranslateButton";
+import TwinklingStars from "../../components/TwinklingStars";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +20,27 @@ export default function DailyVersePage() {
   const [visible, setVisible] = useState(false);
   const [profile, setProfile] = useState(null);
   const [toast, setToast] = useState("");
+  const [theme, setTheme] = useState("vintage");
+  const [reducedMotion, setReducedMotion] = useState(false);
   const router = useRouter();
   const { isMobile } = useBreakpoint();
+
+  useEffect(() => {
+    // Baca tema aktif dari localStorage
+    try {
+      const raw = localStorage.getItem("theme_prefs");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.theme) setTheme(parsed.theme);
+      }
+    } catch {}
+    // Deteksi prefers-reduced-motion
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const handler = (e) => setReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => { init(); }, []);
 
@@ -100,9 +119,12 @@ export default function DailyVersePage() {
 
   return (
     <PageTransition>
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-main)" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-main)", position: "relative" }}>
+      {/* Bintang kelap-kelip di belakang semua konten */}
+      <TwinklingStars theme={theme} reducedMotion={reducedMotion} />
+
       <Sidebar user={profile} />
-      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: isMobile ? "5rem" : undefined }}>
+      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: isMobile ? "5rem" : undefined, position: "relative", zIndex: 1 }}>
 
         {/* Header */}
         <div style={{ width: "100%", maxWidth: "720px", marginBottom: "2.5rem" }}>
@@ -181,7 +203,56 @@ export default function DailyVersePage() {
 }
 
 function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onTranslateError }) {
+  const [translated, setTranslated] = useState(null);
+  const [translating, setTranslating] = useState(false);
+
   if (!verse) return null;
+
+  async function handleTranslate() {
+    if (translated) { setTranslated(null); return; }
+    setTranslating(true);
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: verse.text }),
+      });
+      const data = await res.json();
+      if (data.translatedText) setTranslated(data.translatedText);
+      else onTranslateError("Gagal menerjemahkan.");
+    } catch {
+      onTranslateError("Gagal menerjemahkan.");
+    } finally {
+      setTranslating(false);
+    }
+  }
+
+  // Style tombol yang seragam — menggunakan CSS variables agar menyesuaikan tema
+  const btnStyle = {
+    display: "flex", alignItems: "center", gap: "6px",
+    padding: "0.5rem 1.1rem",
+    background: "var(--btn-verse-bg, rgba(255,255,255,0.04))",
+    border: "1px solid var(--btn-verse-border, rgba(212,175,55,0.25))",
+    borderRadius: "20px",
+    color: "var(--btn-verse-color, var(--text-muted))",
+    cursor: "pointer",
+    fontSize: "0.75rem",
+    letterSpacing: "1px",
+    transition: "all 0.2s ease",
+    fontFamily: "inherit",
+    whiteSpace: "nowrap",
+  };
+
+  function btnEnter(e) {
+    e.currentTarget.style.background = "var(--btn-verse-hover-bg, rgba(212,175,55,0.15))";
+    e.currentTarget.style.color = "var(--accent)";
+    e.currentTarget.style.borderColor = "var(--accent)";
+  }
+  function btnLeave(e) {
+    e.currentTarget.style.background = "var(--btn-verse-bg, rgba(255,255,255,0.04))";
+    e.currentTarget.style.color = "var(--btn-verse-color, var(--text-muted))";
+    e.currentTarget.style.borderColor = "var(--btn-verse-border, rgba(212,175,55,0.25))";
+  }
 
   return (
     <div style={{
@@ -190,23 +261,23 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
       transition: "opacity 0.7s ease, transform 0.7s ease",
       width: "100%", maxWidth: "720px",
     }}>
-      {/* Glass card */}
+      {/* Card — background menyesuaikan tema via CSS variables */}
       <div style={{
         position: "relative",
-        background: "linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(36,32,24,0.6) 50%, rgba(0,0,0,0.4) 100%)",
+        background: "var(--verse-card-bg, linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(36,32,24,0.6) 50%, rgba(0,0,0,0.4) 100%))",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(212,175,55,0.2)",
+        border: "1px solid var(--verse-card-border, rgba(212,175,55,0.2))",
         borderRadius: "20px",
         padding: "clamp(1rem, 5vw, 2rem)",
-        boxShadow: "0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+        boxShadow: "var(--verse-shadow, 0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05))",
         overflow: "hidden",
       }}>
         {/* Corner ornaments */}
         {["topLeft","topRight","bottomLeft","bottomRight"].map((pos) => (
           <span key={pos} style={{
             position: "absolute",
-            fontSize: "1.4rem", opacity: 0.15, color: "#D4AF37",
+            fontSize: "1.4rem", opacity: 0.15, color: "var(--accent)",
             ...(pos === "topLeft" && { top: "1rem", left: "1.2rem" }),
             ...(pos === "topRight" && { top: "1rem", right: "1.2rem" }),
             ...(pos === "bottomLeft" && { bottom: "1rem", left: "1.2rem" }),
@@ -216,21 +287,21 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
 
         {/* Ornamen atas */}
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2.5rem" }}>
-          <span style={{ color: "#D4AF37", fontSize: "0.75rem" }}>✦</span>
-          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to right, rgba(212,175,55,0.5), rgba(212,175,55,0.1))" }} />
-          <span style={{ color: "#D4AF37", fontSize: "0.75rem" }}>✦</span>
+          <span style={{ color: "var(--accent)", fontSize: "0.75rem" }}>✦</span>
+          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to right, var(--accent), transparent)" }} />
+          <span style={{ color: "var(--accent)", fontSize: "0.75rem" }}>✦</span>
         </div>
 
         {/* Label */}
-        <div style={{ fontSize: "0.65rem", color: "#D4AF37", letterSpacing: "3px", marginBottom: "2rem", textAlign: "center" }}>
+        <div style={{ fontSize: "0.65rem", color: "var(--accent)", letterSpacing: "3px", marginBottom: "2rem", textAlign: "center" }}>
           AYAT RENUNGAN HARIAN
         </div>
 
-        {/* Teks ayat dengan tanda kutip besar */}
+        {/* Teks ayat */}
         <div style={{ position: "relative", marginBottom: "2.5rem" }}>
           <span style={{
             position: "absolute", top: "-1.5rem", left: "-0.5rem",
-            fontSize: "5rem", color: "#D4AF37", opacity: 0.12,
+            fontSize: "5rem", color: "var(--accent)", opacity: 0.12,
             fontFamily: "Georgia, serif", lineHeight: 1,
           }}>"</span>
           <p style={{
@@ -238,7 +309,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
             fontStyle: "italic",
             fontSize: "clamp(1rem, 4vw, 1.5rem)",
             lineHeight: 1.9,
-            color: "#f0e6d3",
+            color: "var(--verse-text, var(--text-main))",
             textAlign: "center",
             position: "relative", zIndex: 1,
             padding: "0 1rem",
@@ -247,13 +318,38 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
           </p>
           <span style={{
             position: "absolute", bottom: "-2.5rem", right: "-0.5rem",
-            fontSize: "5rem", color: "#D4AF37", opacity: 0.12,
+            fontSize: "5rem", color: "var(--accent)", opacity: 0.12,
             fontFamily: "Georgia, serif", lineHeight: 1,
           }}>"</span>
         </div>
 
+        {/* Terjemahan (jika ada) */}
+        {translated && (
+          <div style={{
+            margin: "0 0 1.5rem",
+            padding: "1rem 1.25rem",
+            background: "rgba(212,175,55,0.06)",
+            border: "1px solid rgba(212,175,55,0.15)",
+            borderRadius: "12px",
+            textAlign: "center",
+          }}>
+            <div style={{ fontSize: "0.55rem", color: "var(--accent)", letterSpacing: "2px", marginBottom: "0.5rem" }}>
+              TERJEMAHAN
+            </div>
+            <p style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontStyle: "italic",
+              fontSize: "clamp(0.9rem, 3vw, 1.2rem)",
+              lineHeight: 1.8,
+              color: "var(--verse-text-secondary, var(--text-main))",
+            }}>
+              {translated}
+            </p>
+          </div>
+        )}
+
         {/* Ornamen pemisah */}
-        <div style={{ textAlign: "center", color: "#D4AF37", fontSize: "1rem", margin: "2rem 0 1.5rem", letterSpacing: "8px" }}>
+        <div style={{ textAlign: "center", color: "var(--accent)", fontSize: "1rem", margin: "2rem 0 1.5rem", letterSpacing: "8px" }}>
           ✦ ◆ ✦
         </div>
 
@@ -263,7 +359,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
           fontFamily: "'Playfair Display', Georgia, serif",
           fontStyle: "italic",
           fontSize: "1.1rem",
-          color: "#D4AF37",
+          color: "var(--accent)",
           letterSpacing: "1px",
           marginBottom: "1rem",
         }}>
@@ -272,56 +368,31 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
 
         {/* Ornamen bawah */}
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
-          <span style={{ color: "#D4AF37", fontSize: "0.75rem" }}>✦</span>
-          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to left, rgba(212,175,55,0.5), rgba(212,175,55,0.1))" }} />
-          <span style={{ color: "#D4AF37", fontSize: "0.75rem" }}>✦</span>
+          <span style={{ color: "var(--accent)", fontSize: "0.75rem" }}>✦</span>
+          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to left, var(--accent), transparent)" }} />
+          <span style={{ color: "var(--accent)", fontSize: "0.75rem" }}>✦</span>
         </div>
 
-        {/* Action buttons */}
+        {/* Action buttons — urutan: Salin | Bagikan | Terjemahkan | Ayat Baru */}
         <div style={{ display: "flex", justifyContent: "center", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
-          {[
-            { icon: <FiCopy size={16} />, label: "Salin", onClick: onCopy },
-            { icon: <FiShare2 size={16} />, label: "Bagikan", onClick: onShare },
-          ].map(({ icon, label, onClick }) => (
-            <button key={label} onClick={onClick} title={label} style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              padding: "0.5rem 1rem",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(212,175,55,0.2)",
-              borderRadius: "20px",
-              color: "var(--text-muted)",
-              cursor: "pointer",
-              fontSize: "0.75rem",
-              letterSpacing: "1px",
-              transition: "all 0.2s",
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,175,55,0.15)"; e.currentTarget.style.color = "#D4AF37"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.5)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
-            >
-              {icon} {label}
-            </button>
-          ))}
-          <TranslateButton
-            verseText={verse.text}
-            verseId={verse.reference}
-            onError={(msg) => onTranslateError(msg)}
-          />
-          <button onClick={onRefresh} title="Ayat Baru" style={{
-            display: "flex", alignItems: "center", gap: "6px",
-            padding: "0.5rem 1rem",
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(212,175,55,0.2)",
-            borderRadius: "20px",
-            color: "var(--text-muted)",
-            cursor: "pointer",
-            fontSize: "0.75rem",
-            letterSpacing: "1px",
-            transition: "all 0.2s",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,175,55,0.15)"; e.currentTarget.style.color = "#D4AF37"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.5)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.2)"; }}
-          >
-            <FiRefreshCw size={16} style={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} /> Ayat Baru
+          <button onClick={onCopy} title="Salin" style={btnStyle} onMouseEnter={btnEnter} onMouseLeave={btnLeave}>
+            <FiCopy size={15} /> Salin
+          </button>
+          <button onClick={onShare} title="Bagikan" style={btnStyle} onMouseEnter={btnEnter} onMouseLeave={btnLeave}>
+            <FiShare2 size={15} /> Bagikan
+          </button>
+          <button onClick={handleTranslate} title="Terjemahkan" disabled={translating} style={{
+            ...btnStyle,
+            opacity: translating ? 0.7 : 1,
+            background: translated ? "rgba(212,175,55,0.12)" : btnStyle.background,
+            borderColor: translated ? "var(--accent)" : btnStyle.border,
+            color: translated ? "var(--accent)" : btnStyle.color,
+          }} onMouseEnter={btnEnter} onMouseLeave={btnLeave}>
+            <FiGlobe size={15} style={{ animation: translating ? "spin 1s linear infinite" : "none" }} />
+            {translating ? "..." : translated ? "Sembunyikan" : "Terjemahkan"}
+          </button>
+          <button onClick={onRefresh} title="Ayat Baru" style={btnStyle} onMouseEnter={btnEnter} onMouseLeave={btnLeave}>
+            <FiRefreshCw size={15} style={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} /> Ayat Baru
           </button>
         </div>
       </div>
