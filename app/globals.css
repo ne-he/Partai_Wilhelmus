@@ -240,3 +240,110 @@ input:focus, textarea:focus, select:focus {
   border-image: repeating-linear-gradient(45deg, var(--accent), var(--accent2) 30px) 1;
   animation: border-flow 3s linear infinite;
 }
+/* ========== COMMIT 3: Custom Cursor & Advanced Hover ========== */
+/* Custom neon cursor (cyberpunk) */
+body {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="27" viewBox="0 0 24 27"><polygon points="2,2 22,13 12,16 2,25" fill="%2300ff9d" stroke="%2300aa66" stroke-width="1.5"/><circle cx="12" cy="13" r="3" fill="%2300ff9d"/></svg>') 12 13, auto;
+}
+
+/* Ripple effect pada tombol */
+button {
+  position: relative;
+  overflow: hidden;
+}
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(200, 169, 110, 0.4);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+button:active::before {
+  width: 200%;
+  height: 200%;
+}
+
+/* Hover transform lebih dramatis */
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+button:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+a:hover {
+  transform: translateY(-1px);
+  text-shadow: 0 0 5px var(--accent);
+}
+
+/* Glow border pada sidebar/menu saat hover */
+nav a:hover {
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+  transition: all 0.2s;
+}
+/* ========== COMMIT 4: New Cyberpunk Themes ========== */
+/* Theme: Cyber Matrix (hijau neon gelap) */
+.theme-cyber-matrix {
+  --bg-main: #0a0f0a;
+  --bg-card: #0e130e;
+  --bg-card2: #131a13;
+  --accent: #00ff9d;
+  --accent2: #00cc7a;
+  --text-main: #ccffcc;
+  --text-muted: #6f9e6f;
+  --border: #2a3a2a;
+}
+.theme-cyber-matrix .card {
+  backdrop-filter: blur(4px);
+  background: rgba(10, 15, 10, 0.8);
+  border: 1px solid #00ff9d;
+  box-shadow: 0 0 8px rgba(0, 255, 157, 0.3);
+}
+.theme-cyber-matrix h1, .theme-cyber-matrix h2, .theme-cyber-matrix h3 {
+  text-shadow: 0 0 8px #00ff9d;
+}
+.theme-cyber-matrix button {
+  background: #00ff9d20;
+  border: 1px solid #00ff9d;
+  color: #ccffcc;
+}
+.theme-cyber-matrix button:hover {
+  background: #00ff9d40;
+  box-shadow: 0 0 12px #00ff9d;
+}
+
+/* Theme: Dark Neon (biru magenta) */
+.theme-dark-neon {
+  --bg-main: #0b0b1a;
+  --bg-card: #12122a;
+  --bg-card2: #1a1a36;
+  --accent: #ff44cc;
+  --accent2: #aa44ff;
+  --text-main: #f0e6ff;
+  --text-muted: #a99fcc;
+  --border: #2a2a4a;
+}
+.theme-dark-neon .card {
+  backdrop-filter: blur(8px);
+  background: rgba(18, 18, 42, 0.85);
+  border: 1px solid #ff44cc;
+  box-shadow: 0 0 12px rgba(255, 68, 204, 0.3);
+}
+.theme-dark-neon h1, .theme-dark-neon h2, .theme-dark-neon h3 {
+  text-shadow: 0 0 6px #ff44cc;
+}
+.theme-dark-neon button {
+  background: #ff44cc20;
+  border: 1px solid #ff44cc;
+  color: #ffe6ff;
+}
+.theme-dark-neon button:hover {
+  background: #ff44cc40;
+  box-shadow: 0 0 12px #ff44cc;
+}
