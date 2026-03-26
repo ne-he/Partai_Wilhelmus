@@ -1,0 +1,36 @@
+UPDATE v6.2 — Family App
+========================
+
+1. LABEL ANGGOTA KELUARGA (DraggableMember.tsx)
+   - Nama besar tetap: Papa, Mama, Nemi, Venly (dari username, capitalize)
+   - Teks kecil di bawah diganti: Abi, Umi, Baginda, Mbah (via DISPLAY_NAME_MAP)
+   - Label BOSS / CONSIGLIERE / SOLDATO dihapus sepenuhnya
+
+2. PERBAIKAN KONTRAS DAILY VERSE (globals.css)
+   - Tema Light: --verse-card-bg putih solid, --verse-text gelap (#1e1a15)
+   - Tema Minimal: --verse-card-bg putih solid, --verse-text gelap (#1a1a1a)
+   - CSS variables baru: --verse-card-bg, --verse-card-border, --verse-text,
+     --verse-text-secondary, --verse-shadow, --btn-verse-* per tema
+
+3. PENYAMAAN GAYA TOMBOL (app/summary/page.js)
+   - Urutan: Salin | Bagikan | Terjemahkan | Ayat Baru
+   - Semua tombol pakai style object `btnStyle` yang sama
+   - Hover effect seragam via btnEnter/btnLeave
+   - Tombol Terjemahkan sekarang inline (tidak pakai TranslateButton komponen terpisah)
+   - State translated: toggle show/hide terjemahan
+
+4. EFEK BINTANG KELAP-KELIP (components/TwinklingStars.tsx)
+   - Canvas-based, 55–90 bintang tergantung ukuran layar
+   - Animasi opacity sinusoidal independen per bintang
+   - Warna menyesuaikan tema: vintage/stellar (emas), light (abu), minimal (biru-abu)
+   - Intensitas lebih redup di tema terang (light/minimal)
+   - Glow halus untuk bintang berukuran > 1.8px
+   - Respects prefers-reduced-motion (static snapshot)
+   - position: fixed, z-index: 0, pointer-events: none
+   - Diintegrasikan ke app/summary/page.js
+
+5. CATATAN QUEUE (belum diimplementasi — perlu action manual)
+   - Tabel task_queue kemungkinan belum dibuat di Supabase
+   - Jalankan bagian CREATE TABLE task_queue dari supabase-migrations-v4.sql
+   - Cron job sudah benar (vercel.json: 0 17 * * * = 00:00 WIB)
+   - Setelah tabel ada, cron akan otomatis berjalan
