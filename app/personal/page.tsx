@@ -172,6 +172,7 @@ export default function PersonalTasks() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-main)' }}>
+      {/* Subtle paper texture overlay */}
       <div style={{
         position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
@@ -181,6 +182,7 @@ export default function PersonalTasks() {
 
       <main style={{ marginLeft: '220px', flex: 1, padding: '2.5rem 3rem', position: 'relative', zIndex: 1 }}>
 
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -191,29 +193,40 @@ export default function PersonalTasks() {
             PERSONAL WORKSPACE
           </div>
           <h1 style={{
-            fontSize: '2.2rem', color: 'var(--text-main)',
+            fontSize: '2.2rem',
+            color: 'var(--text-main)',
             fontFamily: "'Playfair Display', Georgia, serif",
-            fontWeight: '700', letterSpacing: '0.5px',
+            fontWeight: '700',
+            letterSpacing: '0.5px',
           }}>
             My Tasks
           </h1>
-          <div style={{ height: '2px', width: '60px', background: 'linear-gradient(to right, var(--accent), transparent)', marginTop: '0.5rem' }} />
+          <div style={{
+            height: '2px', width: '60px',
+            background: 'linear-gradient(to right, var(--accent), transparent)',
+            marginTop: '0.5rem',
+          }} />
         </motion.div>
 
+        {/* Stats Cards */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
           style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}
         >
-          <StatCard label="Total Tugas" value={tasks.length} icon="&#9672;" />
-          <StatCard label="Selesai" value={doneTasks.length} icon="&#10022;" accent />
-          <StatCard label="Tersisa" value={tasks.length - doneTasks.length} icon="&#9678;" />
+          <StatCard label="Total Tugas" value={tasks.length} icon="◈" />
+          <StatCard label="Selesai" value={doneTasks.length} icon="✦" accent />
+          <StatCard label="Tersisa" value={tasks.length - doneTasks.length} icon="◎" />
+          {/* Progress bar card */}
           <div style={{
             flex: 2, minWidth: '180px',
-            background: 'var(--bg-card)', backdropFilter: 'blur(12px)',
-            border: '1px solid var(--border)', borderRadius: '12px',
-            padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem',
+            background: 'var(--bg-card)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid var(--border)',
+            borderRadius: '12px',
+            padding: '1rem 1.25rem',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '1.5px' }}>PROGRESS</span>
@@ -230,6 +243,7 @@ export default function PersonalTasks() {
           </div>
         </motion.div>
 
+        {/* Add Task Input */}
         <motion.form
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -239,14 +253,16 @@ export default function PersonalTasks() {
         >
           <div style={{
             display: 'flex',
-            background: 'var(--bg-card)', backdropFilter: 'blur(12px)',
+            background: 'var(--bg-card)',
+            backdropFilter: 'blur(12px)',
             border: inputFocused ? '1px solid var(--accent)' : '1px solid var(--border)',
-            borderRadius: '12px', overflow: 'hidden',
+            borderRadius: '12px',
+            overflow: 'hidden',
             transition: 'border-color 0.2s, box-shadow 0.2s',
             boxShadow: inputFocused ? '0 0 16px rgba(201,165,59,0.12)' : 'none',
           }}>
             <span style={{ padding: '0 1rem', display: 'flex', alignItems: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              &#10022;
+              ✦
             </span>
             <input
               ref={inputRef}
@@ -269,7 +285,8 @@ export default function PersonalTasks() {
                 background: title.trim() ? 'var(--accent)' : 'var(--bg-card2)',
                 border: 'none',
                 color: title.trim() ? '#1a1612' : 'var(--text-muted)',
-                fontWeight: '700', cursor: title.trim() ? 'pointer' : 'default',
+                fontWeight: '700',
+                cursor: title.trim() ? 'pointer' : 'default',
                 fontSize: '0.75rem', letterSpacing: '1.5px', transition: 'all 0.2s',
               }}
             >
@@ -278,6 +295,7 @@ export default function PersonalTasks() {
           </div>
         </motion.form>
 
+        {/* Kanban Columns */}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
@@ -300,6 +318,7 @@ export default function PersonalTasks() {
           </DragOverlay>
         </DndContext>
 
+        {/* Queue Section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -309,13 +328,17 @@ export default function PersonalTasks() {
         </motion.div>
       </main>
 
+      {/* Confirm Delete Modal */}
       <ConfirmModal
         isOpen={!!confirmDelete}
+        title="Hapus Tugas"
         message="Yakin ingin menghapus tugas ini? Tindakan ini tidak bisa dibatalkan."
+        confirmLabel="Hapus"
         onConfirm={confirmDeleteTask}
         onCancel={() => setConfirmDelete(null)}
       />
 
+      {/* Toast notifications */}
       <Toast toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
@@ -324,9 +347,13 @@ export default function PersonalTasks() {
 function StatCard({ label, value, icon, accent }: { label: string; value: number; icon: string; accent?: boolean }) {
   return (
     <div style={{
-      background: 'var(--bg-card)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      background: 'var(--bg-card)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
       border: accent ? '1px solid var(--accent)' : '1px solid var(--border)',
-      borderRadius: '12px', padding: '1rem 1.25rem', minWidth: '110px',
+      borderRadius: '12px',
+      padding: '1rem 1.25rem',
+      minWidth: '110px',
       display: 'flex', flexDirection: 'column', gap: '0.25rem',
       boxShadow: accent ? '0 0 16px rgba(201,165,59,0.08)' : 'none',
     }}>
@@ -335,7 +362,8 @@ function StatCard({ label, value, icon, accent }: { label: string; value: number
         <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '1.5px' }}>{label.toUpperCase()}</span>
       </div>
       <div style={{
-        fontSize: '1.8rem', color: accent ? 'var(--accent)' : 'var(--text-main)',
+        fontSize: '1.8rem',
+        color: accent ? 'var(--accent)' : 'var(--text-main)',
         fontFamily: "'Playfair Display', Georgia, serif",
         fontWeight: '700', lineHeight: 1,
       }}>
