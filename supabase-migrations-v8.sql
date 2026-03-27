@@ -97,3 +97,109 @@ CREATE POLICY "Users can insert own subscriptions"
 CREATE POLICY "Users can delete own subscriptions"
   ON push_subscriptions FOR DELETE
   USING (user_id = auth.uid());
+
+-- ============================================
+-- 7. Triggers untuk Notifikasi Push
+-- ============================================
+
+-- Fungsi helper untuk memanggil Edge Function send-push-notification
+-- Menggunakan pg_net extension (sudah tersedia di Supabase)
+CREATE OR REPLACE FUNCTION call_push_notification(payload JSONB)
+RETURNS void AS $$
+BEGIN
+  PERFORM net.http_post(
+    url     := current_setting('app.edge_function_url', true) || '/send-push-notification',
+    headers := jsonb_build_object(
+      'Content-Type',  'application/json',
+      'Authorization', 'Bearer ' || current_setting('app.service_role_key', true)
+    ),
+    body    := payload::text
+  );
+EXCEPTION WHEN OTHERS THEN
+  -- Jangan gagalkan transaksi utama jika push notification gagal
+  RAISE WARNING 'Push notification failed: %', SQLERRM;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- -----------------------------------------------
+-- Trigger 1: Task baru di family_tasks
+-- -----------------------------------------------
+CREATE OR REPLACE FUNCTION notify_on_family_task_insert()
+RETURNS TRIGGER AS $$
+DECLARE
+  recipient RECORD;
+BEGIN
+  FOR recipient IN
+    SELECT id FROM users WHERE id != NEW.created_by
+  LOOP
+    PERFORM call_push_notification(jsonb_build_object(
+      'user_id', recipient.id,
+      'title',   'Tugas Baru',
+      'body',    NEW.title,
+      'data',    jsonb_build_object('task_id', NEW.id, 'url', '/family')
+    ));
+  END LOOP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_family_task_insert
+  AFTER INSERT ON family_tasks
+  FOR EACH ROW EXECUTE FUNCTION notify_on_family_task_insert();
+
+-- -----------------------------------------------
+-- Trigger 2: Komentar baru di task_comments
+-- -----------------------------------------------
+CREATE OR REPLACE FUNCTION notify_on_comment_insert()
+RETURNS TRIGGER AS $$
+DECLARE
+  task_record RECORD;
+  recipient   RECORD;
+BEGIN
+  SELECT * INTO task_record FROM family_tasks WHERE id = NEW.task_id;
+
+  FOR recipient IN
+    SELECT DISTINCT u.id FROM users u
+    WHERE u.id != NEW.user_id
+      AND (
+        u.id = task_record.assigned_to
+        OR u.role IN ('papa', 'mama')
+      )
+  LOOP
+    PERFORM call_push_notification(jsonb_build_object(
+      'user_id', recipient.id,
+      'title',   'Komentar Baru',
+      'body',    LEFT(NEW.content, 50),
+      'data',    jsonb_build_object('task_id', NEW.task_id, 'url', '/family')
+    ));
+  END LOOP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_comment_insert
+  AFTER INSERT ON task_comments
+  FOR EACH ROW EXECUTE FUNCTION notify_on_comment_insert();
+
+-- -----------------------------------------------
+-- Trigger 3: Assignment berubah di family_tasks
+-- -----------------------------------------------
+CREATE OR REPLACE FUNCTION notify_on_assignment()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.assigned_to IS NOT NULL
+     AND NEW.assigned_to IS DISTINCT FROM OLD.assigned_to THEN
+    PERFORM call_push_notification(jsonb_build_object(
+      'user_id', NEW.assigned_to,
+      'title',   'Kamu Ditugaskan',
+      'body',    NEW.title,
+      'data',    jsonb_build_object('task_id', NEW.id, 'url', '/family')
+    ));
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_task_assignment
+  AFTER UPDATE OF assigned_to ON family_tasks
+  FOR EACH ROW EXECUTE FUNCTION notify_on_assignment();
