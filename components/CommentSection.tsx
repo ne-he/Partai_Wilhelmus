@@ -4,6 +4,8 @@ import React from 'react';
 import CommentList from './CommentList';
 import CommentForm from './CommentForm';
 import { useRealtimeComments } from '../Lib/hooks/useRealtimeComments';
+import { useToast } from '../Lib/hooks/useToast';
+import Toast from './Toast';
 import type { User } from '../Lib/types';
 
 interface CommentSectionProps {
@@ -11,10 +13,9 @@ interface CommentSectionProps {
   profile: User;
 }
 
-// Dummy showToast untuk dipakai sebelum task 3.1 mengintegrasikan useNotifications
-function dummyShowToast(_msg: string, _type: 'success' | 'error' | 'info') {}
-
 export default function CommentSection({ taskId, profile }: CommentSectionProps) {
+  const { toasts, showToast, dismissToast } = useToast();
+
   const {
     comments,
     loading,
@@ -25,7 +26,8 @@ export default function CommentSection({ taskId, profile }: CommentSectionProps)
     addComment,
     editComment,
     deleteComment,
-  } = useRealtimeComments(taskId, dummyShowToast);
+    retry,
+  } = useRealtimeComments(taskId, showToast);
 
   return (
     <div>
@@ -55,11 +57,16 @@ export default function CommentSection({ taskId, profile }: CommentSectionProps)
         error={error}
         hasMore={hasMore}
         onLoadMore={loadMore}
+        onRetry={retry}
         loadingMore={loadingMore}
         profile={profile}
         onEdit={editComment}
         onDelete={deleteComment}
+        showToast={showToast}
       />
+
+      {/* Toast notifications */}
+      <Toast toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Comment, User } from '../Lib/types';
 import ConfirmModal from './ConfirmModal';
+import type { ToastItem } from '../Lib/hooks/useToast';
 
 const DISPLAY_NAME_MAP: Record<string, string> = {
   papa: 'Abi',
@@ -52,14 +53,17 @@ function isEdited(comment: Comment): boolean {
   return updated - created > 1000;
 }
 
+import type { ToastItem } from '../Lib/hooks/useToast';
+
 interface CommentItemProps {
   comment: Comment;
   profile: User;
   onEdit: (id: string, content: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  showToast: (msg: string, type: ToastItem['type']) => void;
 }
 
-export default function CommentItem({ comment, profile, onEdit, onDelete }: CommentItemProps) {
+export default function CommentItem({ comment, profile, onEdit, onDelete, showToast }: CommentItemProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState('');
@@ -100,6 +104,8 @@ export default function CommentItem({ comment, profile, onEdit, onDelete }: Comm
       setEditMode(false);
     } catch (err) {
       console.error('Gagal mengedit komentar:', err);
+      const msg = err instanceof Error ? err.message : 'Gagal mengedit komentar';
+      showToast(msg, 'error');
       // pertahankan editMode=true agar user bisa coba lagi
     } finally {
       setEditLoading(false);
@@ -113,6 +119,8 @@ export default function CommentItem({ comment, profile, onEdit, onDelete }: Comm
       setShowConfirm(false);
     } catch (err) {
       console.error('Gagal menghapus komentar:', err);
+      const msg = err instanceof Error ? err.message : 'Gagal menghapus komentar';
+      showToast(msg, 'error');
     } finally {
       setDeleteLoading(false);
     }

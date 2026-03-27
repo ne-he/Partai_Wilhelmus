@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import CommentItem from './CommentItem';
 import Skeleton from './Skeleton';
 import type { Comment, User } from '../Lib/types';
+import type { ToastItem } from '../Lib/hooks/useToast';
 
 interface CommentListProps {
   comments: Comment[];
@@ -12,10 +13,12 @@ interface CommentListProps {
   error: string | null;
   hasMore: boolean;
   onLoadMore: () => void;
+  onRetry: () => void;
   loadingMore: boolean;
   profile: User;
   onEdit: (id: string, content: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  showToast: (msg: string, type: ToastItem['type']) => void;
 }
 
 export default function CommentList({
@@ -24,10 +27,12 @@ export default function CommentList({
   error,
   hasMore,
   onLoadMore,
+  onRetry,
   loadingMore,
   profile,
   onEdit,
   onDelete,
+  showToast,
 }: CommentListProps) {
   if (loading) {
     return (
@@ -46,7 +51,7 @@ export default function CommentList({
       }}>
         <p style={{ marginBottom: '0.75rem', fontSize: '0.85rem' }}>{error}</p>
         <button
-          onClick={onLoadMore}
+          onClick={onRetry}
           style={{
             background: 'transparent',
             border: '1px solid var(--border)',
@@ -93,6 +98,7 @@ export default function CommentList({
               profile={profile}
               onEdit={onEdit}
               onDelete={onDelete}
+              showToast={showToast}
             />
           </motion.div>
         ))}
@@ -117,6 +123,12 @@ export default function CommentList({
           >
             {loadingMore ? 'Memuat...' : 'Muat lebih banyak'}
           </button>
+        </div>
+      )}
+
+      {loadingMore && (
+        <div style={{ marginTop: '0.5rem' }}>
+          <Skeleton variant="task-list" count={1} />
         </div>
       )}
     </div>

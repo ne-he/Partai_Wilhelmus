@@ -21,6 +21,7 @@ export interface UseRealtimeCommentsReturn {
   addComment: (content: string) => Promise<void>;
   editComment: (id: string, content: string) => Promise<void>;
   deleteComment: (id: string) => Promise<void>;
+  retry: () => void;
 }
 
 export function useRealtimeComments(
@@ -33,8 +34,13 @@ export function useRealtimeComments(
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset, setOffset] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const fetchComments = useCallback(async () => {
+  const retry = useCallback(() => {
+    setRetryCount(prev => prev + 1);
+  }, []);
+
+  const fetchComments = useCallback(async (isMounted: { current: boolean }) => {
     setLoading(true);
     setError(null);
     try {
@@ -45,6 +51,7 @@ export function useRealtimeComments(
         .order('created_at', { ascending: true })
         .range(0, PAGE_SIZE - 1);
 
+      if (!isMounted.current) return;
       if (fetchError) throw fetchError;
 
       const normalized = (data ?? []).map((row: Record<string, unknown>) => {
@@ -61,20 +68,24 @@ export function useRealtimeComments(
         } as Comment;
       });
 
+      if (!isMounted.current) return;
       setComments(normalized);
       setOffset(normalized.length);
       setHasMore(normalized.length === PAGE_SIZE);
     } catch (err) {
+      if (!isMounted.current) return;
       const msg = err instanceof Error ? err.message : 'Gagal memuat komentar';
       setError(msg);
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   }, [taskId]);
 
   useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
+    const isMounted = { current: true };
+    fetchComments(isMounted);
+    return () => { isMounted.current = false; };
+  }, [fetchComments, retryCount]);
 
   useEffect(() => {
     const channel = supabase
@@ -158,6 +169,7 @@ export function useRealtimeComments(
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
+    const isMounted = { current: true };
     try {
       const { data, error: fetchError } = await supabase
         .from('task_comments')
@@ -166,6 +178,7 @@ export function useRealtimeComments(
         .order('created_at', { ascending: true })
         .range(offset, offset + PAGE_SIZE - 1);
 
+      if (!isMounted.current) return;
       if (fetchError) throw fetchError;
 
       const normalized = (data ?? []).map((row: Record<string, unknown>) => {
@@ -182,14 +195,16 @@ export function useRealtimeComments(
         } as Comment;
       });
 
+      if (!isMounted.current) return;
       setComments(prev => [...prev, ...normalized]);
       setOffset(prev => prev + normalized.length);
       setHasMore(normalized.length === PAGE_SIZE);
     } catch (err) {
+      if (!isMounted.current) return;
       const msg = err instanceof Error ? err.message : 'Gagal memuat lebih banyak';
       showToast(msg, 'error');
     } finally {
-      setLoadingMore(false);
+      if (isMounted.current) setLoadingMore(false);
     }
   }, [taskId, offset, hasMore, loadingMore, showToast]);
 
@@ -273,5 +288,6 @@ export function useRealtimeComments(
     addComment,
     editComment,
     deleteComment,
+    retry,
   };
 }
