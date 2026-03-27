@@ -23,6 +23,7 @@ interface DroppableFamilyTaskProps {
   assignedUser?: User | null;
   onStatusChange?: (taskId: string, status: string) => void;
   onDelete?: (taskId: string) => void;
+  onClick?: (task: FamilyTask) => void;
 }
 
 const statusConfig = {
@@ -44,7 +45,7 @@ function getRoleConfig(role: string) {
 }
 
 export default function DroppableFamilyTask({
-  task, assignedUser, onStatusChange, onDelete,
+  task, assignedUser, onStatusChange, onDelete, onClick,
 }: DroppableFamilyTaskProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: task.id,
@@ -56,6 +57,7 @@ export default function DroppableFamilyTask({
   return (
     <motion.div
       ref={setNodeRef}
+      onClick={() => onClick?.(task)}
       animate={{
         scale: isOver ? 1.015 : 1,
       }}
@@ -73,6 +75,7 @@ export default function DroppableFamilyTask({
         position: 'relative',
         overflow: 'hidden',
         transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
+        cursor: onClick ? 'pointer' : 'default',
       }}
     >
       {/* Accent shimmer line saat isOver */}

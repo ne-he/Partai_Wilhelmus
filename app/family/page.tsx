@@ -22,6 +22,7 @@ import PageTransition from '../../components/PageTransition';
 import Skeleton from '../../components/Skeleton';
 import Toast from '../../components/Toast';
 import Tooltip from '../../components/Tooltip';
+import TaskDetailModal from '../../components/TaskDetailModal';
 import { useToast } from '../../Lib/hooks/useToast';
 import { useNotifications } from '../../Lib/hooks/useNotifications';
 import useBreakpoint from '../../Lib/hooks/useBreakpoint';
@@ -35,6 +36,7 @@ interface FamilyTask {
   created_by: string;
   assigned_to: string | null;
   created_at: string;
+  deadline?: string | null;
 }
 
 interface User {
@@ -78,6 +80,7 @@ export default function FamilyTasks() {
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [inputFocused, setInputFocused] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<FamilyTask | null>(null);
   const router = useRouter();
 
   const { toasts, showToast, dismissToast } = useToast();
@@ -426,6 +429,7 @@ export default function FamilyTasks() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.97 }}
                         transition={{ delay: i * 0.03 }}
+                        onClick={() => setSelectedTask(task)}
                         style={{
                           background: 'var(--bg-card)',
                           border: '1px solid var(--border)',
@@ -434,6 +438,7 @@ export default function FamilyTasks() {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '0.6rem',
+                          cursor: 'pointer',
                         }}
                       >
                         {/* Judul */}
@@ -525,6 +530,7 @@ export default function FamilyTasks() {
                           assignedUser={assignedUser}
                           onStatusChange={isEditor ? updateStatus : undefined}
                           onDelete={isEditor ? deleteTask : undefined}
+                          onClick={(t) => setSelectedTask(t)}
                         />
                       </motion.div>
                     );
@@ -555,6 +561,15 @@ export default function FamilyTasks() {
         {/* Toast notifications */}
         <Toast toasts={toasts} onDismiss={dismissToast} />
       </div>
+
+      {profile && (
+        <TaskDetailModal
+          task={selectedTask}
+          users={users}
+          profile={profile}
+          onClose={() => setSelectedTask(null)}
+        />
+      )}
     </PageTransition>
   );
 }
