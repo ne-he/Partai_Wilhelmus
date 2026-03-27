@@ -1,0 +1,202 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../../Lib/supabaseClient';
+import type { Comment } from '../types';
+import type { ToastItem } from './useToast';
+
+const PAGE_SIZE = 10;
+
+export interface UseRealtimeCommentsReturn {
+  comments: Comment[];
+  loading: boolean;
+  error: string | null;
+  hasMore: boolean;
+  loadMore: () => Promise<void>;
+  loadingMore: boolean;
+  addComment: (content: string) => Promise<void>;
+  editComment: (id: string, content: string) => Promise<void>;
+  deleteComment: (id: string) => Promise<void>;
+}
+
+export function useRealtimeComments(
+  taskId: string,
+  showToast: (msg: string, type: ToastItem['type']) => void
+): UseRealtimeCommentsReturn {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+
+  const fetchComments = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('task_comments')
+        .select('*, users!user_id(username, role)')
+        .eq('task_id', taskId)
+        .order('created_at', { ascending: true })
+        .range(0, PAGE_SIZE - 1);
+
+      if (fetchError) throw fetchError;
+
+      const normalized = (data ?? []).map((row: Record<string, unknown>) => {
+        const users = row.users as { username?: string; role?: string } | null;
+        return {
+          id: row.id,
+          task_id: row.task_id,
+          user_id: row.user_id,
+          content: row.content,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          username: users?.username,
+          role: users?.role,
+        } as Comment;
+      });
+
+      setComments(normalized);
+      setOffset(normalized.length);
+      setHasMore(normalized.length === PAGE_SIZE);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal memuat komentar';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [taskId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  // Realtime subscription — placeholder, akan diisi di task 2.5
+  useEffect(() => {
+    // TODO (task 2.5): subscribe ke channel `comments:${taskId}`
+    return () => {
+      // TODO (task 2.5): unsubscribe saat unmount
+    };
+  }, [taskId]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('task_comments')
+        .select('*, users!user_id(username, role)')
+        .eq('task_id', taskId)
+        .order('created_at', { ascending: true })
+        .range(offset, offset + PAGE_SIZE - 1);
+
+      if (fetchError) throw fetchError;
+
+      const normalized = (data ?? []).map((row: Record<string, unknown>) => {
+        const users = row.users as { username?: string; role?: string } | null;
+        return {
+          id: row.id,
+          task_id: row.task_id,
+          user_id: row.user_id,
+          content: row.content,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          username: users?.username,
+          role: users?.role,
+        } as Comment;
+      });
+
+      setComments(prev => [...prev, ...normalized]);
+      setOffset(prev => prev + normalized.length);
+      setHasMore(normalized.length === PAGE_SIZE);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal memuat lebih banyak';
+      showToast(msg, 'error');
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [taskId, offset, hasMore, loadingMore, showToast]);
+
+  const addComment = useCallback(async (content: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Tidak terautentikasi');
+
+    const optimisticId = `optimistic-${Date.now()}`;
+    const optimistic: Comment = {
+      id: optimisticId,
+      task_id: taskId,
+      user_id: user.id,
+      content,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    setComments(prev => [...prev, optimistic]);
+
+    const { data, error: insertError } = await supabase
+      .from('task_comments')
+      .insert({ task_id: taskId, user_id: user.id, content })
+      .select('*, users!user_id(username, role)')
+      .single();
+
+    if (insertError) {
+      setComments(prev => prev.filter(c => c.id !== optimisticId));
+      throw insertError;
+    }
+
+    const users = (data as Record<string, unknown>).users as { username?: string; role?: string } | null;
+    const inserted: Comment = {
+      id: (data as Record<string, unknown>).id as string,
+      task_id: (data as Record<string, unknown>).task_id as string,
+      user_id: (data as Record<string, unknown>).user_id as string,
+      content: (data as Record<string, unknown>).content as string,
+      created_at: (data as Record<string, unknown>).created_at as string,
+      updated_at: (data as Record<string, unknown>).updated_at as string,
+      username: users?.username,
+      role: users?.role,
+    };
+
+    setComments(prev => prev.map(c => c.id === optimisticId ? inserted : c));
+  }, [taskId]);
+
+  const editComment = useCallback(async (id: string, content: string) => {
+    const { error: updateError } = await supabase
+      .from('task_comments')
+      .update({ content, updated_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (updateError) throw updateError;
+
+    setComments(prev =>
+      prev.map(c =>
+        c.id === id
+          ? { ...c, content, updated_at: new Date().toISOString() }
+          : c
+      )
+    );
+  }, []);
+
+  const deleteComment = useCallback(async (id: string) => {
+    const { error: deleteError } = await supabase
+      .from('task_comments')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) throw deleteError;
+
+    setComments(prev => prev.filter(c => c.id !== id));
+  }, []);
+
+  return {
+    comments,
+    loading,
+    error,
+    hasMore,
+    loadMore,
+    loadingMore,
+    addComment,
+    editComment,
+    deleteComment,
+  };
+}

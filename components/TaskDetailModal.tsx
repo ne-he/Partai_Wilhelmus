@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import useBreakpoint from '../Lib/hooks/useBreakpoint';
+import CommentSection from './CommentSection';
 
 interface FamilyTask {
   id: string;
@@ -53,7 +54,7 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function TaskDetailModal({ task, users, onClose }: TaskDetailModalProps) {
+export default function TaskDetailModal({ task, users, profile, onClose }: TaskDetailModalProps) {
   const { isMobile } = useBreakpoint();
   const isOpen = task !== null;
 
@@ -290,7 +291,8 @@ export default function TaskDetailModal({ task, users, onClose }: TaskDetailModa
               marginBottom: '1.5rem',
             }} />
 
-            {/* CommentSection akan diisi di task 2.2 */}
+            {/* CommentSection */}
+            <CommentSection taskId={task.id} profile={profile} />
 
           </motion.div>
         </div>
