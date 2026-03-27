@@ -68,3 +68,32 @@ CREATE INDEX IF NOT EXISTS idx_task_comments_task_id ON task_comments(task_id, c
 -- ============================================
 
 ALTER TABLE family_tasks ADD COLUMN IF NOT EXISTS deadline TIMESTAMPTZ;
+
+-- ============================================
+-- 6. Create push_subscriptions table
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  endpoint   TEXT NOT NULL UNIQUE,
+  keys       JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- SELECT: user hanya bisa baca miliknya sendiri
+CREATE POLICY "Users can read own subscriptions"
+  ON push_subscriptions FOR SELECT
+  USING (user_id = auth.uid());
+
+-- INSERT: user hanya bisa insert miliknya sendiri
+CREATE POLICY "Users can insert own subscriptions"
+  ON push_subscriptions FOR INSERT
+  WITH CHECK (user_id = auth.uid());
+
+-- DELETE: user hanya bisa hapus miliknya sendiri
+CREATE POLICY "Users can delete own subscriptions"
+  ON push_subscriptions FOR DELETE
+  USING (user_id = auth.uid());
