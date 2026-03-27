@@ -15,3 +15,19 @@ DroppableFamilyTask pakai motion.div dengan spring animation saat isOver — sca
 Gold shimmer line muncul di atas card saat hover
 Badge assigned user punya animasi masuk/keluar dengan AnimatePresence
 DragOverlay punya dropAnimation dengan easing yang lebih smooth + drop-shadow glow
+
+
+---
+
+## v8 Changelog
+
+### New Features
+- **Task Comments** — add, edit, delete comments on family tasks with role-based access
+- **Real-time updates** — comments sync live via Supabase Realtime (no refresh needed)
+- **Emoji picker** — pick emoji reactions directly in the comment form
+- **In-app toast notifications** — toast alerts for task assignments, comments, and completions
+- **Browser push notifications** — Web Push API with VAPID key support via `send-push-notification` Edge Function
+- **Daily deadline reminder** — cron-triggered Edge Function (`deadline-reminder`) sends push notifications H-1 before task deadlines
+
+### Breaking Changes
+- `family_tasks` table now requires a `deadline TIMESTAMPTZ` column — run `supabase-migrations-v8.sql` to apply the schema change before deploying v8

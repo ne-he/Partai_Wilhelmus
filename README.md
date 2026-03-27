@@ -35,3 +35,36 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## v8 Features
+
+### Task Comments
+- Real-time comment updates via Supabase Realtime
+- Emoji picker for reactions
+- Edit and delete comments with role-based access control
+- Threaded comments per family task
+
+### Notifications
+- In-app toast notifications for family events (task assigned, commented, completed)
+- Browser push notifications using the Web Push API (VAPID)
+- Daily deadline reminder (H-1) via scheduled cron job
+
+### Setup
+
+**Generate VAPID keys** (required for push notifications):
+```bash
+npx web-push generate-vapid-keys
+```
+Add the output to your `.env.local`:
+```
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+```
+
+**Deploy Edge Functions**:
+```bash
+supabase functions deploy send-push-notification
+supabase functions deploy deadline-reminder
+```
+
+**Run migration** — open `supabase-migrations-v8.sql` in the Supabase SQL editor and execute it. This adds the `deadline TIMESTAMPTZ` column to `family_tasks`.
