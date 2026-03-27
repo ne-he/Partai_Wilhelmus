@@ -23,6 +23,7 @@ import Skeleton from '../../components/Skeleton';
 import Toast from '../../components/Toast';
 import Tooltip from '../../components/Tooltip';
 import { useToast } from '../../Lib/hooks/useToast';
+import { useNotifications } from '../../Lib/hooks/useNotifications';
 import useBreakpoint from '../../Lib/hooks/useBreakpoint';
 
 export const dynamic = 'force-dynamic';
@@ -80,6 +81,7 @@ export default function FamilyTasks() {
   const router = useRouter();
 
   const { toasts, showToast, dismissToast } = useToast();
+  useNotifications(profile?.id ?? '', showToast);
   const { isMobile } = useBreakpoint();
 
   const sensors = useSensors(
