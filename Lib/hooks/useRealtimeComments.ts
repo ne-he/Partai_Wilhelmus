@@ -7,6 +7,10 @@ import type { ToastItem } from './useToast';
 
 const PAGE_SIZE = 10;
 
+const DISPLAY_NAME_MAP: Record<string, string> = {
+  papa: 'Abi', mama: 'Umi', nemi: 'Baginda', venly: 'Mbah',
+};
+
 export interface UseRealtimeCommentsReturn {
   comments: Comment[];
   loading: boolean;
@@ -72,13 +76,84 @@ export function useRealtimeComments(
     fetchComments();
   }, [fetchComments]);
 
-  // Realtime subscription — placeholder, akan diisi di task 2.5
   useEffect(() => {
-    // TODO (task 2.5): subscribe ke channel `comments:${taskId}`
+    const channel = supabase
+      .channel(`comments:${taskId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'task_comments',
+          filter: `task_id=eq.${taskId}`,
+        },
+        async (payload) => {
+          // Fetch full comment dengan join users
+          const { data } = await supabase
+            .from('task_comments')
+            .select('*, users!user_id(username, role)')
+            .eq('id', payload.new.id)
+            .single();
+
+          if (!data) return;
+
+          const users = (data as Record<string, unknown>).users as { username?: string; role?: string } | null;
+          const newComment: Comment = {
+            id: (data as Record<string, unknown>).id as string,
+            task_id: (data as Record<string, unknown>).task_id as string,
+            user_id: (data as Record<string, unknown>).user_id as string,
+            content: (data as Record<string, unknown>).content as string,
+            created_at: (data as Record<string, unknown>).created_at as string,
+            updated_at: (data as Record<string, unknown>).updated_at as string,
+            username: users?.username,
+            role: users?.role,
+          };
+
+          // Hindari duplicate (optimistic update sudah ada)
+          setComments(prev => {
+            const exists = prev.some(c => c.id === newComment.id);
+            if (exists) return prev;
+            showToast(`Komentar baru dari ${users?.username ? (DISPLAY_NAME_MAP[users.username.toLowerCase()] ?? users.username) : 'seseorang'}`, 'info');
+            return [...prev, newComment];
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'task_comments',
+          filter: `task_id=eq.${taskId}`,
+        },
+        (payload) => {
+          setComments(prev =>
+            prev.map(c =>
+              c.id === payload.new.id
+                ? { ...c, content: payload.new.content as string, updated_at: payload.new.updated_at as string }
+                : c
+            )
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'task_comments',
+          filter: `task_id=eq.${taskId}`,
+        },
+        (payload) => {
+          setComments(prev => prev.filter(c => c.id !== payload.old.id));
+        }
+      )
+      .subscribe();
+
     return () => {
-      // TODO (task 2.5): unsubscribe saat unmount
+      supabase.removeChannel(channel);
     };
-  }, [taskId]);
+  }, [taskId, showToast]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
