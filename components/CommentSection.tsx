@@ -2,6 +2,7 @@
 
 import React from 'react';
 import CommentList from './CommentList';
+import CommentForm from './CommentForm';
 import { useRealtimeComments } from '../Lib/hooks/useRealtimeComments';
 import type { User } from '../Lib/types';
 
@@ -21,6 +22,7 @@ export default function CommentSection({ taskId, profile }: CommentSectionProps)
     hasMore,
     loadMore,
     loadingMore,
+    addComment,
     editComment,
     deleteComment,
   } = useRealtimeComments(taskId, dummyShowToast);
@@ -40,7 +42,12 @@ export default function CommentSection({ taskId, profile }: CommentSectionProps)
         KOMENTAR
       </h3>
 
-      {/* CommentForm akan diisi di task 2.3 */}
+      {/* CommentForm */}
+      <CommentForm
+        taskId={taskId}
+        userId={profile.id}
+        onSubmit={addComment}
+      />
 
       <CommentList
         comments={comments}
