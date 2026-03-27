@@ -53,8 +53,6 @@ function isEdited(comment: Comment): boolean {
   return updated - created > 1000;
 }
 
-import type { ToastItem } from '../Lib/hooks/useToast';
-
 interface CommentItemProps {
   comment: Comment;
   profile: User;

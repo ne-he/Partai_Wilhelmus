@@ -18,7 +18,7 @@
 - [x] 3.6 feat: daily deadline reminder notifications
 - [x] 4.1 feat: open comment modal from family task card
 - [x] 4.2 feat: add loading and error states for comment section
-- [ ] 4.3 test: end-to-end testing for comments and notifications
+- [x] 4.3 test: end-to-end testing for comments and notifications
 - [ ] 4.4 docs: update README and changelog for v8
 
 ---
