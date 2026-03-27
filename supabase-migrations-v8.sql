@@ -203,3 +203,25 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_task_assignment
   AFTER UPDATE OF assigned_to ON family_tasks
   FOR EACH ROW EXECUTE FUNCTION notify_on_assignment();
+
+-- ============================================
+-- 8. Konfigurasi app settings untuk trigger
+-- ============================================
+-- Jalankan perintah ini di Supabase SQL Editor setelah deploy Edge Function:
+--
+-- SET app.edge_function_url = 'https://<project-ref>.supabase.co/functions/v1';
+-- SET app.service_role_key = '<your-service-role-key>';
+--
+-- Atau gunakan Supabase Dashboard > Settings > Database > Extensions
+-- Aktifkan extension pg_net jika belum aktif:
+
+CREATE EXTENSION IF NOT EXISTS pg_net;
+
+-- ============================================
+-- 9. Verifikasi triggers
+-- ============================================
+-- Cek triggers yang sudah dibuat:
+-- SELECT trigger_name, event_manipulation, event_object_table
+-- FROM information_schema.triggers
+-- WHERE trigger_schema = 'public'
+-- ORDER BY event_object_table;
