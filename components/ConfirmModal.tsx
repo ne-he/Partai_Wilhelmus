@@ -5,9 +5,11 @@ interface ConfirmModalProps {
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  title?: string;
+  confirmLabel?: string;
 }
 
-export default function ConfirmModal({ isOpen, message, onConfirm, onCancel }: ConfirmModalProps) {
+export default function ConfirmModal({ isOpen, message, onConfirm, onCancel, title, confirmLabel }: ConfirmModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -41,6 +43,17 @@ export default function ConfirmModal({ isOpen, message, onConfirm, onCancel }: C
               border: '1px solid var(--border)',
             }}
           >
+            {title && (
+              <p style={{
+                color: 'var(--text-main)',
+                fontSize: '1.1rem',
+                fontWeight: '700',
+                fontFamily: "'Playfair Display', Georgia, serif",
+                marginBottom: '8px',
+              }}>
+                {title}
+              </p>
+            )}
             <p
               style={{
                 color: 'var(--text-main)',
@@ -83,7 +96,7 @@ export default function ConfirmModal({ isOpen, message, onConfirm, onCancel }: C
                   transition: 'all 0.15s ease',
                 }}
               >
-                Konfirmasi
+                {confirmLabel ?? 'Konfirmasi'}
               </button>
             </div>
           </motion.div>
