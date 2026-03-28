@@ -5,7 +5,7 @@ import { supabase } from '../../Lib/supabaseClient';
 import type { Comment } from '../types';
 import type { ToastItem } from './useToast';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10; // number of comments per page load
 
 const DISPLAY_NAME_MAP: Record<string, string> = {
   papa: 'Abi', mama: 'Umi', nemi: 'Baginda', venly: 'Mbah',
