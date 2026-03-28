@@ -69,3 +69,9 @@ supabase functions deploy deadline-reminder
 ```
 
 **Run migration** — open `supabase-migrations-v8.sql` in the Supabase SQL editor and execute it. This adds the `deadline TIMESTAMPTZ` column to `family_tasks`.
+
+## Running Tests
+
+```bash
+npm run test
+```
