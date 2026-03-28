@@ -5,7 +5,7 @@ import { supabase } from '../../Lib/supabaseClient';
 import type { Comment } from '../types';
 import type { ToastItem } from './useToast';
 
-const PAGE_SIZE = 10; // number of comments per page load
+const PAGE_SIZE = 10;
 
 const DISPLAY_NAME_MAP: Record<string, string> = {
   papa: 'Abi', mama: 'Umi', nemi: 'Baginda', venly: 'Mbah',
@@ -34,10 +34,10 @@ export function useRealtimeComments(
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset, setOffset] = useState(0);
-  const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
 
   const retry = useCallback(() => {
-    setFetchTrigger(prev => prev + 1);
+    setRetryCount(prev => prev + 1);
   }, []);
 
   const fetchComments = useCallback(async (isMounted: { current: boolean }) => {
@@ -85,7 +85,7 @@ export function useRealtimeComments(
     const isMounted = { current: true };
     fetchComments(isMounted);
     return () => { isMounted.current = false; };
-  }, [fetchComments, fetchTrigger]);
+  }, [fetchComments, retryCount]);
 
   useEffect(() => {
     const channel = supabase

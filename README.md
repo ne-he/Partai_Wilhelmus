@@ -59,7 +59,6 @@ Add the output to your `.env.local`:
 ```
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
 VAPID_PRIVATE_KEY=...
-VAPID_SUBJECT=mailto:your@email.com
 ```
 
 **Deploy Edge Functions**:
@@ -69,9 +68,3 @@ supabase functions deploy deadline-reminder
 ```
 
 **Run migration** — open `supabase-migrations-v8.sql` in the Supabase SQL editor and execute it. This adds the `deadline TIMESTAMPTZ` column to `family_tasks`.
-
-## Running Tests
-
-```bash
-npm run test
-```

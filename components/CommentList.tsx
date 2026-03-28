@@ -77,7 +77,7 @@ export default function CommentList({
         fontSize: '0.85rem',
         padding: '1rem 0',
       }}>
-        Belum ada komentar. Jadilah yang pertama berkomentar! ✦
+        Belum ada komentar. Jadilah yang pertama! ✦
       </p>
     );
   }

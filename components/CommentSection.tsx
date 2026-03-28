@@ -32,9 +32,7 @@ export default function CommentSection({ taskId, profile }: CommentSectionProps)
   return (
     <div>
       {/* Header */}
-      <h3
-        aria-label="Bagian komentar"
-        style={{
+      <h3 style={{
         fontFamily: "'Playfair Display', Georgia, serif",
         fontSize: '0.7rem',
         fontWeight: '700',
