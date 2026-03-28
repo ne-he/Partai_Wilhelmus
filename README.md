@@ -59,6 +59,7 @@ Add the output to your `.env.local`:
 ```
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
 VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:your@email.com
 ```
 
 **Deploy Edge Functions**:
