@@ -34,10 +34,10 @@ export function useRealtimeComments(
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset, setOffset] = useState(0);
-  const [retryCount, setRetryCount] = useState(0);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
 
   const retry = useCallback(() => {
-    setRetryCount(prev => prev + 1);
+    setFetchTrigger(prev => prev + 1);
   }, []);
 
   const fetchComments = useCallback(async (isMounted: { current: boolean }) => {
@@ -85,7 +85,7 @@ export function useRealtimeComments(
     const isMounted = { current: true };
     fetchComments(isMounted);
     return () => { isMounted.current = false; };
-  }, [fetchComments, retryCount]);
+  }, [fetchComments, fetchTrigger]);
 
   useEffect(() => {
     const channel = supabase
