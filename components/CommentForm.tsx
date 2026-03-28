@@ -89,7 +89,7 @@ export default function CommentForm({ taskId: _taskId, userId: _userId, onSubmit
         onChange={e => setContent(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={loading}
-        placeholder="Tulis komentar... (Ctrl+Enter untuk kirim)"
+        placeholder="Tulis komentar... (Ctrl+Enter / ⌘+Enter untuk kirim)"
         rows={3}
         style={{
           width: '100%',
