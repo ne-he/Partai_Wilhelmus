@@ -23,6 +23,7 @@ import TaskQueue from '../../components/TaskQueue';
 import ConfirmModal from '../../components/ConfirmModal';
 import Toast from '../../components/Toast';
 import { useToast } from '../../Lib/hooks/useToast';
+import useBreakpoint from '../../Lib/hooks/useBreakpoint';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,6 +67,7 @@ export default function PersonalTasks() {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { toasts, showToast, dismissToast } = useToast();
+  const { isMobile } = useBreakpoint();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -180,7 +182,7 @@ export default function PersonalTasks() {
 
       <Sidebar user={profile} />
 
-      <main style={{ marginLeft: '220px', flex: 1, padding: '2.5rem 3rem', position: 'relative', zIndex: 1 }}>
+      <main style={{ marginLeft: isMobile ? '0' : '220px', flex: 1, padding: isMobile ? '1.25rem 1rem' : '2.5rem 3rem', paddingBottom: isMobile ? '5rem' : undefined, position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
         <motion.div

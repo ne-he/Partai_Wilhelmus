@@ -58,7 +58,7 @@ export default function SpectatePage({ params }) {
     <PageTransition>
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-main)" }}>
       <Sidebar user={myProfile} />
-      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", paddingBottom: isMobile ? "5rem" : undefined }}>
+      <main style={{ marginLeft: isMobile ? "0" : "220px", flex: 1, padding: isMobile ? "1.25rem 1rem" : "2.5rem 3rem", paddingBottom: isMobile ? "5rem" : undefined }}>
         <div style={{ marginBottom: "2.5rem" }}>
           <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", letterSpacing: "3px", marginBottom: "6px" }}>SPECTATE</div>
           <h1 style={{ fontSize: "2rem", color: "var(--text-main)", fontWeight: "normal", textTransform: "capitalize" }}>

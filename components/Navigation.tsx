@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { label: 'Personal', href: '/personal',    icon: '👤' },
   { label: 'Family',   href: '/family',      icon: '👨‍👩‍👧' },
   { label: 'Summary',  href: '/summary',     icon: '📖' },
-  { label: 'Profile',  href: '/spectate/me', icon: '👤' },
+  { label: 'Settings', href: '/settings',    icon: '⚙️' },
 ];
 
 export default function Navigation({ currentPath }: NavigationProps) {
