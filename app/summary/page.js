@@ -212,11 +212,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
     if (translated) { setTranslated(null); return; }
     setTranslating(true);
     try {
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: verse.text }),
-      });
+      const res = await fetch(`/api/translate?text=${encodeURIComponent(verse.text)}`);
       const data = await res.json();
       if (data.translatedText) setTranslated(data.translatedText);
       else onTranslateError("Gagal menerjemahkan.");
