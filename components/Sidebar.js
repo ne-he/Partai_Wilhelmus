@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "../Lib/supabaseClient";
+import useBreakpoint from "../Lib/hooks/useBreakpoint";
 
 const navItems = [
   { href: "/home", label: "Home", icon: "✦" },
@@ -14,11 +15,15 @@ const navItems = [
 export default function Sidebar({ user }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { isMobile } = useBreakpoint();
 
   async function handleLogout() {
     await supabase.auth.signOut();
     router.push("/login");
   }
+
+  // Di mobile, navigasi ditangani bottom-nav global (Navigation.tsx); sidebar desktop disembunyikan.
+  if (isMobile) return null;
 
   return (
     <aside style={{

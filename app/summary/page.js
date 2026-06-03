@@ -109,7 +109,7 @@ export default function DailyVersePage() {
   if (loading) return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-main)" }}>
       <Sidebar user={profile} />
-      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: isMobile ? "5rem" : undefined }}>
+      <main style={{ marginLeft: isMobile ? "0" : "220px", flex: 1, padding: isMobile ? "1.25rem 1rem" : "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: isMobile ? "5rem" : undefined }}>
         <div style={{ width: "100%", maxWidth: "720px" }}>
           <Skeleton variant="verse-card" />
         </div>
@@ -124,7 +124,7 @@ export default function DailyVersePage() {
       <TwinklingStars theme={theme} reducedMotion={reducedMotion} />
 
       <Sidebar user={profile} />
-      <main style={{ marginLeft: "220px", flex: 1, padding: "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: isMobile ? "5rem" : undefined, position: "relative", zIndex: 1 }}>
+      <main style={{ marginLeft: isMobile ? "0" : "220px", flex: 1, padding: isMobile ? "1.25rem 1rem" : "2.5rem 3rem", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: isMobile ? "5rem" : undefined, position: "relative", zIndex: 1 }}>
 
         {/* Header */}
         <div style={{ width: "100%", maxWidth: "720px", marginBottom: "2.5rem" }}>
