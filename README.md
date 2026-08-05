@@ -1,70 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Partai Wilhelmus
 
-## Getting Started
-this readme is updated for the API version of this web
+A shared to-do app for one family. Every member has a private task board, plus a common
+family board where tasks get assigned, commented on, and closed together.
 
-First, run the development server:
+Built because a group chat is a bad task tracker: things scroll away, nobody knows who owns
+what, and there is no record of what actually got done.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Features
+
+**Personal board**
+- Three status columns with drag and drop reordering
+- Queue management for tasks that are not started yet
+- Daily auto reset through a scheduled job
+
+**Family board**
+- Drag a member onto a task to assign it
+- Threaded comments per task, updating live through Supabase Realtime
+- Emoji reactions
+- Edit and delete with role based access control
+
+**Notifications**
+- In app toasts for assignment, comment, and completion events
+- Browser push through the Web Push API using VAPID
+- Deadline reminder one day ahead, sent by cron
+
+**Other**
+- Spectate mode to view another member's board read only
+- Summary page with a translation endpoint
+- Page transitions with Framer Motion
+
+## Stack
+
+| Layer | Tool |
+| --- | --- |
+| Framework | Next.js 16, App Router |
+| UI | React 19, Tailwind CSS 4 |
+| Database and auth | Supabase, with Realtime |
+| Drag and drop | dnd-kit |
+| Motion | Framer Motion |
+| Tests | Vitest, Testing Library, fast-check |
+| Hosting | Vercel |
+
+## Structure
+
+```
+app/
+  personal/          private task board
+  family/            shared board with assignment
+  spectate/[user]/   read only view of a member
+  summary/           weekly summary
+  settings/
+  api/
+    cron/daily-reset/
+    cron/deadline-reminder/
+    translate/
+Lib/hooks/           data hooks
+components/
+supabase/            edge functions
+__tests__/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**1. Install and configure**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+```
 
-## Learn More
+Create `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+CRON_SECRET=
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Generate the VAPID pair with:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## v8 Features
-
-### Task Comments
-- Real-time comment updates via Supabase Realtime
-- Emoji picker for reactions
-- Edit and delete comments with role-based access control
-- Threaded comments per family task
-
-### Notifications
-- In-app toast notifications for family events (task assigned, commented, completed)
-- Browser push notifications using the Web Push API (VAPID)
-- Daily deadline reminder (H-1) via scheduled cron job
-
-### Setup
-
-**Generate VAPID keys** (required for push notifications):
 ```bash
 npx web-push generate-vapid-keys
 ```
-Add the output to your `.env.local`:
-```
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
-VAPID_PRIVATE_KEY=...
-```
 
-**Deploy Edge Functions**:
+**2. Run the database migrations**
+
+Open the Supabase SQL editor and run, in order: `supabase-setup.sql`,
+`supabase-migrations-v4.sql`, `supabase-migrations-v8.sql`, then `supabase-rls-fix.sql`.
+
+**3. Deploy the edge functions**
+
 ```bash
 supabase functions deploy send-push-notification
 supabase functions deploy deadline-reminder
 ```
 
-**Run migration** — open `supabase-migrations-v8.sql` in the Supabase SQL editor and execute it. This adds the `deadline TIMESTAMPTZ` column to `family_tasks`.
+**4. Start**
+
+```bash
+npm run dev
+```
+
+## Testing
+
+```bash
+npm test
+```
+
+Property based tests use fast-check, mostly around task ordering and status transitions.
+
+## Cron jobs
+
+`vercel.json` registers two jobs. The daily reset runs at 17:00 UTC, which is midnight in
+Jakarta. The deadline reminder runs at 00:00 UTC. Both check `CRON_SECRET` before doing
+anything.
