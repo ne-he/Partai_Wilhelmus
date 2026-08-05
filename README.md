@@ -6,6 +6,8 @@ family board where tasks get assigned, commented on, and closed together.
 Built because a group chat is a bad task tracker: things scroll away, nobody knows who owns
 what, and there is no record of what actually got done.
 
+**Live:** https://partai-wilhelmus.vercel.app
+
 ## Features
 
 **Personal board**
