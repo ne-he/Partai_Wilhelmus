@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# editor
+.vscode/
+
+# catatan kerja & spec draft, bukan bagian dari produk
+.req/
+base/
+update_id/
+DEPLOYMENT-READY.md
+FAMILY-APP-V4-IMPLEMENTATION-SUMMARY.md
+additional-update.md
+lastUpdate.md
+last-update-fetaure.txt
+Dokumentasi-Partai-Wilhelmus.docx
