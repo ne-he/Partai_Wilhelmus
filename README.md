@@ -8,6 +8,9 @@ what, and there is no record of what actually got done.
 
 **Live:** https://partai-wilhelmus.vercel.app
 
+**Try it without an account:** https://partai-wilhelmus.vercel.app/spectate shows the real boards
+with sample data. Nothing there reads from or writes to the database.
+
 ## Features
 
 **Personal board**
@@ -28,6 +31,7 @@ what, and there is no record of what actually got done.
 
 **Other**
 - Spectate mode to view another member's board read only
+- Public demo at `/spectate`: sample data kept in local state, no login and no Supabase calls
 - Summary page with a translation endpoint
 - Page transitions with Framer Motion
 
@@ -49,6 +53,7 @@ what, and there is no record of what actually got done.
 app/
   personal/          private task board
   family/            shared board with assignment
+  spectate/          public demo with sample data
   spectate/[user]/   read only view of a member
   summary/           weekly summary
   settings/

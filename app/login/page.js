@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { supabase } from "../../Lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
@@ -96,6 +97,19 @@ export default function LoginPage() {
             {loading ? "MASUK..." : "MASUK"}
           </button>
         </form>
+
+        {/* Pintu masuk tanpa akun: papan dengan data contoh, tidak menyentuh Supabase */}
+        <Link href="/spectate" style={{
+          display: "block", marginTop: "0.9rem", padding: "0.8rem",
+          border: "1px solid var(--border)", borderRadius: "10px",
+          color: "var(--accent)", textAlign: "center", textDecoration: "none",
+          fontSize: "0.8rem", letterSpacing: "1px",
+        }}>
+          Lihat mode spectate →
+        </Link>
+        <div style={{ marginTop: "0.4rem", textAlign: "center", fontSize: "0.7rem", color: "var(--text-muted)" }}>
+          Tanpa akun, pakai data contoh
+        </div>
 
         <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.75rem", color: "var(--text-muted)" }}>
           Papa · Mama · Nemi · Venly

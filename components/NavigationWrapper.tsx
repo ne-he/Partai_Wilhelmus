@@ -9,5 +9,7 @@ import Navigation from './Navigation';
  */
 export default function NavigationWrapper() {
   const pathname = usePathname();
+  // Mode spectate punya navigasi sendiri, bottom-nav mengarah ke halaman yang butuh login.
+  if (pathname === '/spectate') return null;
   return <Navigation currentPath={pathname} />;
 }
