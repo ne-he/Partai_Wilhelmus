@@ -1,4 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
+
+const MOBILE_QUERY = '(max-width: 767px)';
+
+function subscribe(onChange: () => void) {
+  const mediaQuery = window.matchMedia(MOBILE_QUERY);
+  mediaQuery.addEventListener('change', onChange);
+  return () => mediaQuery.removeEventListener('change', onChange);
+}
+
+function getSnapshot() {
+  return window.matchMedia(MOBILE_QUERY).matches;
+}
+
+// Server tidak tahu lebar layar. Saat hydration React pakai nilai ini dulu,
+// baru render ulang dengan nilai asli, jadi HTML server dan client tidak mismatch (React #418).
+function getServerSnapshot() {
+  return false;
+}
 
 /**
  * Hook untuk mendeteksi breakpoint layar.
@@ -8,28 +26,7 @@ import { useState, useEffect } from 'react';
  * Requirements: 7.1, 11.4
  */
 function useBreakpoint(): { isMobile: boolean } {
-  const [isMobile, setIsMobile] = useState<boolean>(() => {
-    // SSR guard: window tidak tersedia di server
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(max-width: 767px)').matches;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const mediaQuery = window.matchMedia('(max-width: 767px)');
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      setIsMobile(event.matches);
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
-
+  const isMobile = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   return { isMobile };
 }
 
