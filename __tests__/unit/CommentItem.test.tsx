@@ -1,5 +1,5 @@
 /**
- * Unit Tests — CommentItem
+ * Unit Tests: CommentItem
  * Feature: family-comments-notifications
  */
 
@@ -43,7 +43,7 @@ const defaultProps = {
   showToast: vi.fn(),
 };
 
-describe('CommentItem — three-dots menu visibility', () => {
+describe('CommentItem: three-dots menu visibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

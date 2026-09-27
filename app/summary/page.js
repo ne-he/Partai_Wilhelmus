@@ -83,13 +83,13 @@ export default function DailyVersePage() {
 
   function handleCopy() {
     if (!verse) return;
-    const text = `"${verse.text}"\n— ${verse.reference} (${verse.translationId})`;
+    const text = `"${verse.text}"\n${verse.reference} (${verse.translationId})`;
     navigator.clipboard.writeText(text).then(() => showToast("Ayat disalin ✦"));
   }
 
   function handleShare() {
     if (!verse) return;
-    const text = `"${verse.text}"\n— ${verse.reference} (${verse.translationId})`;
+    const text = `"${verse.text}"\n${verse.reference} (${verse.translationId})`;
     if (navigator.share) {
       navigator.share({ title: "Ayat Renungan Harian", text });
     } else {
@@ -223,7 +223,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
     }
   }
 
-  // Style tombol yang seragam — menggunakan CSS variables agar menyesuaikan tema
+  // Style tombol yang seragam, menggunakan CSS variables agar menyesuaikan tema
   const btnStyle = {
     display: "flex", alignItems: "center", gap: "6px",
     padding: "0.5rem 1.1rem",
@@ -257,7 +257,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
       transition: "opacity 0.7s ease, transform 0.7s ease",
       width: "100%", maxWidth: "720px",
     }}>
-      {/* Card — background menyesuaikan tema via CSS variables */}
+      {/* Card: background menyesuaikan tema via CSS variables */}
       <div style={{
         position: "relative",
         background: "var(--verse-card-bg, linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(36,32,24,0.6) 50%, rgba(0,0,0,0.4) 100%))",
@@ -359,7 +359,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
           letterSpacing: "1px",
           marginBottom: "1rem",
         }}>
-          — {verse.reference}
+          {verse.reference}
         </div>
 
         {/* Ornamen bawah */}
@@ -369,7 +369,7 @@ function VerseCard({ verse, visible, refreshing, onCopy, onShare, onRefresh, onT
           <span style={{ color: "var(--accent)", fontSize: "0.75rem" }}>✦</span>
         </div>
 
-        {/* Action buttons — urutan: Salin | Bagikan | Terjemahkan | Ayat Baru */}
+        {/* Action buttons, urutan: Salin | Bagikan | Terjemahkan | Ayat Baru */}
         <div style={{ display: "flex", justifyContent: "center", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
           <button onClick={onCopy} title="Salin" style={btnStyle} onMouseEnter={btnEnter} onMouseLeave={btnLeave}>
             <FiCopy size={15} /> Salin

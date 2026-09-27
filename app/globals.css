@@ -77,7 +77,7 @@ button:hover, a:hover {
   --text-secondary: #4a3f32;
   --text-muted: #7a6e62;
   --border: #e0d8ce;
-  /* Daily verse — teks gelap di atas card putih */
+  /* Daily verse: teks gelap di atas card putih */
   --verse-card-bg: rgba(255,255,255,0.96);
   --verse-card-border: rgba(200,169,110,0.35);
   --verse-text: #1e1a15;
@@ -101,7 +101,7 @@ button:hover, a:hover {
   --text-secondary: #2e2e2e;
   --text-muted: #5a5a5a;
   --border: #cccccc;
-  /* Daily verse — teks gelap di atas card putih */
+  /* Daily verse: teks gelap di atas card putih */
   --verse-card-bg: rgba(255,255,255,0.98);
   --verse-card-border: rgba(74,127,165,0.3);
   --verse-text: #111111;

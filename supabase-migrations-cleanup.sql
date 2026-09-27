@@ -1,5 +1,5 @@
 -- ============================================================================
---  Cleanup migration — buang sisa fitur Pomodoro (legacy)
+--  Cleanup migration: buang sisa fitur Pomodoro (legacy)
 --  Tabel focus_sessions dibuat di supabase-migrations-v4.sql tapi tidak lagi
 --  dipakai oleh kode aplikasi mana pun. Aman untuk di-drop.
 --

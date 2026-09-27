@@ -43,7 +43,7 @@ export default function CommentForm({ taskId: _taskId, userId: _userId, onSubmit
       setContent('');
       setShowEmojiPicker(false);
     } catch {
-      // Pertahankan teks saat gagal — jangan kosongkan textarea
+      // Pertahankan teks saat gagal, jangan kosongkan textarea
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 /**
- * Unit Tests — CommentForm
+ * Unit Tests: CommentForm
  * Feature: family-comments-notifications
  */
 

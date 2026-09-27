@@ -98,7 +98,7 @@ export default function TaskQueue({ queuedTasks, onMoveToToday }: TaskQueueProps
               fontStyle: 'italic',
               textAlign: 'center',
             }}>
-              Queue kosong — semua tugas sudah diselesaikan
+              Queue kosong, semua tugas sudah diselesaikan
             </p>
           </motion.div>
         ) : (

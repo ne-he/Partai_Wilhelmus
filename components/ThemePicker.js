@@ -9,7 +9,7 @@ const THEMES = [
 ];
 
 // ThemePicker menerima props `theme` dan `onThemeChange` dari parent (home/page.js).
-// Persistensi dikelola oleh useTheme hook di parent — tidak ada logika localStorage manual di sini.
+// Persistensi dikelola oleh useTheme hook di parent, tidak ada logika localStorage manual di sini.
 export default function ThemePicker({ theme, onThemeChange }) {
   function handleSelect(name) {
     onThemeChange(name);

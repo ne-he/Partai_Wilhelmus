@@ -24,7 +24,7 @@ function safeSetItem(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch {
-    // private browsing or quota exceeded — silently ignore
+    // private browsing or quota exceeded: silently ignore
   }
 }
 

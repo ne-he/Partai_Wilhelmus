@@ -1,8 +1,8 @@
 /**
- * Property-Based Tests — Family Comments & Notifications
+ * Property-Based Tests: Family Comments & Notifications
  * Feature: family-comments-notifications
  *
- * All tests are pure logic (no DOM, no Supabase) — they test data invariants,
+ * All tests are pure logic (no DOM, no Supabase). They test data invariants,
  * state transitions, and business rules using in-memory simulations.
  *
  * **Validates: Requirements 17.1–17.5, all Correctness Properties**
@@ -168,7 +168,7 @@ test('Property 1: Comment Insert Round-Trip', () => {
 // Feature: family-comments-notifications, Property 2: updated_at Invariant
 // **Validates: Requirements 17.2**
 // ---------------------------------------------------------------------------
-test('Property 2: updated_at Invariant — isEdited when diff > 1000ms', () => {
+test('Property 2: updated_at Invariant, isEdited when diff > 1000ms', () => {
   fc.assert(
     fc.property(
       fc.integer({ min: BASE_TS, max: MAX_TS - 86400000 }),
@@ -196,7 +196,7 @@ test('Property 2: updated_at Invariant — isEdited when diff > 1000ms', () => {
 // Feature: family-comments-notifications, Property 3: Cascade Delete No Orphan
 // **Validates: Requirements 17.3, 1.2**
 // ---------------------------------------------------------------------------
-test('Property 3: Cascade Delete — no orphan comments after task deletion', () => {
+test('Property 3: Cascade Delete, no orphan comments after task deletion', () => {
   fc.assert(
     fc.property(
       uuidArb,
@@ -225,7 +225,7 @@ test('Property 3: Cascade Delete — no orphan comments after task deletion', ()
 // Feature: family-comments-notifications, Property 4: RLS SOLDATO Own Only
 // **Validates: Requirements 1.7, 1.9**
 // ---------------------------------------------------------------------------
-test('Property 4: RLS SOLDATO — can only see own comments', () => {
+test('Property 4: RLS SOLDATO, can only see own comments', () => {
   fc.assert(
     fc.property(
       uuidArb,
@@ -244,7 +244,7 @@ test('Property 4: RLS SOLDATO — can only see own comments', () => {
 // Feature: family-comments-notifications, Property 5: RLS BOSS/CONSIGLIERE All
 // **Validates: Requirements 1.8, 1.10**
 // ---------------------------------------------------------------------------
-test('Property 5: RLS BOSS/CONSIGLIERE — can see all comments', () => {
+test('Property 5: RLS BOSS/CONSIGLIERE, can see all comments', () => {
   fc.assert(
     fc.property(
       fc.array(commentArb, { minLength: 0, maxLength: 20 }),
@@ -262,7 +262,7 @@ test('Property 5: RLS BOSS/CONSIGLIERE — can see all comments', () => {
 // Feature: family-comments-notifications, Property 6: RLS INSERT Matching user_id
 // **Validates: Requirements 1.6**
 // ---------------------------------------------------------------------------
-test('Property 6: RLS INSERT — only allowed when user_id matches auth uid', () => {
+test('Property 6: RLS INSERT, only allowed when user_id matches auth uid', () => {
   fc.assert(
     fc.property(commentArb, uuidArb, (comment, authUserId) => {
       const matchingComment = { ...comment, user_id: authUserId };
@@ -281,7 +281,7 @@ test('Property 6: RLS INSERT — only allowed when user_id matches auth uid', ()
 // Feature: family-comments-notifications, Property 7: Pagination First Load ≤ 10
 // **Validates: Requirements 5.1, 5.3**
 // ---------------------------------------------------------------------------
-test('Property 7: Pagination — first load returns at most 10 comments', () => {
+test('Property 7: Pagination, first load returns at most 10 comments', () => {
   fc.assert(
     fc.property(
       fc.array(commentArb, { minLength: 0, maxLength: 50 }),
@@ -304,7 +304,7 @@ test('Property 7: Pagination — first load returns at most 10 comments', () => 
 // Feature: family-comments-notifications, Property 8: Comment Rendering Required Fields
 // **Validates: Requirements 5.2, 5.7, 4.2**
 // ---------------------------------------------------------------------------
-test('Property 8: Comment Rendering — valid comment has all required non-empty fields', () => {
+test('Property 8: Comment Rendering, valid comment has all required non-empty fields', () => {
   fc.assert(
     fc.property(commentArb, (comment) => {
       return isValidComment(comment);
@@ -318,7 +318,7 @@ test('Property 8: Comment Rendering — valid comment has all required non-empty
 // Feature: family-comments-notifications, Property 9: Empty Input Rejection
 // **Validates: Requirements 6.8**
 // ---------------------------------------------------------------------------
-test('Property 9: Empty Input Rejection — whitespace-only content is rejected', () => {
+test('Property 9: Empty Input Rejection, whitespace-only content is rejected', () => {
   fc.assert(
     fc.property(
       fc.stringMatching(/^\s*$/),
@@ -335,7 +335,7 @@ test('Property 9: Empty Input Rejection — whitespace-only content is rejected'
 // Feature: family-comments-notifications, Property 10: Realtime State Consistency
 // **Validates: Requirements 8.2, 8.3, 8.4, 17.5**
 // ---------------------------------------------------------------------------
-test('Property 10: Realtime State Consistency — no duplicates after INSERT/UPDATE/DELETE events', () => {
+test('Property 10: Realtime State Consistency, no duplicates after INSERT/UPDATE/DELETE events', () => {
   fc.assert(
     fc.property(
       fc.array(commentArb, { minLength: 0, maxLength: 10 }),
@@ -363,7 +363,7 @@ test('Property 10: Realtime State Consistency — no duplicates after INSERT/UPD
 // Feature: family-comments-notifications, Property 11: Push Subscription Round-Trip
 // **Validates: Requirements 10.4, 2.1**
 // ---------------------------------------------------------------------------
-test('Property 11: Push Subscription Round-Trip — stored endpoint matches original', () => {
+test('Property 11: Push Subscription Round-Trip, stored endpoint matches original', () => {
   fc.assert(
     fc.property(pushSubArb, (sub) => {
       const store: PushSubscriptionRecord[] = [];
@@ -380,7 +380,7 @@ test('Property 11: Push Subscription Round-Trip — stored endpoint matches orig
 // Feature: family-comments-notifications, Property 12: Error Preservation Textarea
 // **Validates: Requirements 16.4**
 // ---------------------------------------------------------------------------
-test('Property 12: Error Preservation — textarea content unchanged after failed submit', () => {
+test('Property 12: Error Preservation, textarea content unchanged after failed submit', () => {
   fc.assert(
     fc.property(nonEmptyString, (content) => {
       // Simulate: content before submit = content after failed submit
@@ -411,7 +411,7 @@ test('Property 12: Error Preservation — textarea content unchanged after faile
 // Feature: family-comments-notifications, Property 13: Deadline Query Window
 // **Validates: Requirements 14.2**
 // ---------------------------------------------------------------------------
-test('Property 13: Deadline Query Window — tasks within [now+20h, now+28h] are included', () => {
+test('Property 13: Deadline Query Window, tasks within [now+20h, now+28h] are included', () => {
   fc.assert(
     fc.property(
       fc.integer({ min: -10 * 3600 * 1000, max: 40 * 3600 * 1000 }),

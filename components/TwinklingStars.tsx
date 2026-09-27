@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * TwinklingStars — partikel bintang interaktif untuk Daily Verse
+ * TwinklingStars: partikel bintang interaktif untuk Daily Verse
  * Fitur: twinkle (alpha sinusoidal), gerakan Brownian, repulsi kursor
  * Warna & intensitas menyesuaikan tema aktif
  */
@@ -74,7 +74,7 @@ export default function TwinklingStars({ theme = "vintage", reducedMotion = fals
       starsRef.current = Array.from({ length: count }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        // kecepatan awal sangat kecil — gerakan Brownian
+        // kecepatan awal sangat kecil, gerakan Brownian
         vx: (Math.random() - 0.5) * 0.3,
         vy: (Math.random() - 0.5) * 0.3,
         radius: 0.8 + Math.random() * 2.2,
@@ -95,7 +95,7 @@ export default function TwinklingStars({ theme = "vintage", reducedMotion = fals
     resize();
     window.addEventListener("resize", resize);
 
-    // Mouse / touch tracking — posisi relatif ke window (canvas fixed)
+    // Mouse / touch tracking: posisi relatif ke window (canvas fixed)
     function onMouseMove(e: MouseEvent) {
       mouseRef.current = { x: e.clientX, y: e.clientY };
     }

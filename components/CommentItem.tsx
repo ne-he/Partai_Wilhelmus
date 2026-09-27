@@ -78,7 +78,7 @@ export default function CommentItem({ comment, profile, onEdit, onDelete, showTo
 
   const avatarColor = getAvatarColor(comment.role);
   const initials = getInitials(comment.username);
-  const displayName = comment.username ? getDisplayName(comment.username) : '—';
+  const displayName = comment.username ? getDisplayName(comment.username) : '-';
   const edited = isEdited(comment);
 
   // Close dropdown on outside click

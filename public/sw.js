@@ -1,4 +1,4 @@
-// Service Worker untuk Push Notifications — Partai Wilhelmus v8
+// Service Worker untuk Push Notifications · Partai Wilhelmus v8
 // Handles push events dan notification clicks
 
 self.addEventListener('push', (event) => {

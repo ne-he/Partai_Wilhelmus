@@ -289,7 +289,7 @@ export default function AnalogClock({ theme = "vintage", reducedMotion = false }
           <circle cx={cx} cy={cy + 22} r="3" fill={palette.secondHand} />
         </g>
 
-        {/* Center cap — on top of all hands */}
+        {/* Center cap: on top of all hands */}
         <circle cx={cx} cy={cy} r="8" fill="url(#center-grad)" />
         <circle cx={cx} cy={cy} r="4" fill={palette.centerInner} />
         <circle cx={cx} cy={cy} r="8" fill="none" stroke={palette.center} strokeWidth="1" opacity="0.6" />

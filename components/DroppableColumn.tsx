@@ -85,7 +85,7 @@ export default function DroppableColumn({ status, tasks, title, onDelete }: Drop
 
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
         <div style={{ minHeight: '180px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {/* Drop indicator — always rendered at top when isOver */}
+          {/* Drop indicator: always rendered at top when isOver */}
           <AnimatePresence>
             {isOver && (
               <motion.div

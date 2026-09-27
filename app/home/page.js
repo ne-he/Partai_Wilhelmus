@@ -151,7 +151,7 @@ export default function HomePage() {
   // Task 9.3: show digital clock if showDigital OR reducedMotion
   const showDigitalClock = showDigital || reducedMotion;
 
-  // Task 6.5: Req 9.1 — mobile clock layout uses CSS Grid with grid-template-columns: 1fr
+  // Task 6.5: Req 9.1, mobile clock layout uses CSS Grid with grid-template-columns: 1fr
   const clockContainerStyle = isMobile
     ? {
         display: "grid",
@@ -239,7 +239,7 @@ export default function HomePage() {
               }}
             />
 
-            {/* Task 6.5: Req 9.1 — clock container with mobile vertical grid layout */}
+            {/* Task 6.5: Req 9.1, clock container with mobile vertical grid layout */}
             <div style={clockContainerStyle}>
               {/* Clock: Analog or Digital */}
               {showDigitalClock ? (
@@ -337,7 +337,7 @@ export default function HomePage() {
         </main>
       </PageTransition>
 
-      {/* Task 9.1: ThemePicker — fixed bottom-right (positioned inside component) */}
+      {/* Task 9.1: ThemePicker, fixed bottom-right (positioned inside component) */}
       <ThemePicker
         theme={theme.charAt(0).toUpperCase() + theme.slice(1)}
         onThemeChange={handleThemeChange}

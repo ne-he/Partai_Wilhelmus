@@ -395,7 +395,7 @@ export default function FamilyTasks() {
             </motion.div>
             )}
 
-            {/* Task list — mobile card stack or desktop list */}
+            {/* Task list: mobile card stack or desktop list */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}

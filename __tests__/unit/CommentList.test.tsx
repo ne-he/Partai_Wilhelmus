@@ -1,5 +1,5 @@
 /**
- * Unit Tests — CommentList
+ * Unit Tests: CommentList
  * Feature: family-comments-notifications
  */
 
