@@ -252,6 +252,7 @@ export default function HomePage() {
             {/* Task 9.1: GreetingText */}
             <GreetingText
               email={user?.email}
+              role={profile?.role}
               reducedMotion={reducedMotion}
             />
 

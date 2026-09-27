@@ -6,13 +6,6 @@ import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-const EMAIL_ROLE_MAP = {
-  "papa@example.com":   { username: "Papa",  role: "papa" },
-  "mama@example.com":  { username: "Mama",  role: "mama" },
-  "nemi@example.com": { username: "Nemi",  role: "nemi" },
-  "venly@example.com":  { username: "Venly", role: "venly" },
-};
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,16 +25,17 @@ export default function LoginPage() {
       return;
     }
 
-    // Pastikan row di tabel users ada
+    // Pastikan row di tabel users ada. Username dan role anggota keluarga
+    // sudah tersimpan di row mereka sendiri (lihat supabase-setup.sql), jadi
+    // email tidak perlu dipetakan di kode. Akun baru dapat row default.
     const user = data.user;
     const { data: existing } = await supabase.from("users").select("id").eq("id", user.id).single();
     if (!existing) {
-      const info = EMAIL_ROLE_MAP[user.email] || { username: user.email.split("@")[0], role: "nemi" };
       await supabase.from("users").insert({
         id: user.id,
         email: user.email,
-        username: info.username,
-        role: info.role,
+        username: user.email.split("@")[0],
+        role: "nemi",
       });
     }
 

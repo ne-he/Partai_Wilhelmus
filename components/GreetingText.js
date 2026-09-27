@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 
-// Requirement 4.2–4.5: email-to-nickname mapping
+// Requirement 4.2–4.5: nickname per family role (role comes from the
+// user's own row in the users table, so no email addresses live in the code)
 export const GREETING_MAP = {
-  'papa@example.com': 'Abah',
-  'mama@example.com': 'Emak',
-  'nemi@example.com': 'Tuan Muda',
-  'venly@example.com': 'Penly',
+  papa: 'Abah',
+  mama: 'Emak',
+  nemi: 'Tuan Muda',
+  venly: 'Penly',
 };
 
 // Requirement 4.1: determine time period from hour (0–23)
@@ -19,9 +20,9 @@ export function getTimePeriod(hour) {
 }
 
 // Requirement 4.2–4.7: build full greeting string
-export function getGreeting(email, hour) {
+export function getGreeting(email, hour, role) {
   const period = getTimePeriod(hour);
-  const name = GREETING_MAP[email] ?? (email ? email.split('@')[0] : 'Friend');
+  const name = GREETING_MAP[role] ?? (email ? email.split('@')[0] : 'Friend');
   return `Good ${period} ${name}`;
 }
 
@@ -34,13 +35,13 @@ function getCurrentDate() {
   });
 }
 
-export default function GreetingText({ email }) {
+export default function GreetingText({ email, role }) {
   const [greeting, setGreeting] = useState('');
   const [dateStr, setDateStr] = useState('');
 
   function refresh() {
     const now = new Date();
-    setGreeting(getGreeting(email, now.getHours()));
+    setGreeting(getGreeting(email, now.getHours(), role));
     setDateStr(getCurrentDate());
   }
 
@@ -50,7 +51,7 @@ export default function GreetingText({ email }) {
     const timer = setInterval(refresh, 60000);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [email]);
+  }, [email, role]);
 
   // Split greeting into "Good Morning" part and name part for styling
   const parts = greeting.split(' ');

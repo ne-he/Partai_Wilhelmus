@@ -26,6 +26,8 @@ CREATE POLICY "Authenticated can insert logs"
 -- ============================================================
 -- INSERT USER PROFILES (dari Auth ke tabel users)
 -- Jalankan ini supaya profile Papa/Mama/Nemi/Venly ada di tabel
+-- Ganti email placeholder di bawah dengan email akun Auth masing-masing
+-- sebelum dijalankan (email asli sengaja tidak disimpan di repo publik)
 -- ============================================================
 
 INSERT INTO users (id, username, email, role)
